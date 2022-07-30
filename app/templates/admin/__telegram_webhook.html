@@ -1,0 +1,12 @@
+<form class="container col-sm-6 form-signin" action="" method="post">
+    <h3>Установить webhook для телеграм-бота</h3>
+    {{ form.hidden_tag() }}
+
+    {{ form.url(size=32, class='col-sm-12 form-control', type="text", placeholder='URL') }}
+    {% for error in form.url.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+
+    {{ form.submit(class="btn btn-lg btn-danger btn-block mt-3") }}
+</form>
+

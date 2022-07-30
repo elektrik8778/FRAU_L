@@ -1,0 +1,909 @@
+{% extends 'main/base_spectre.html' %}
+
+{% block scripts_pre %}
+    {# записать пользователя в localstorage #}
+    <script>
+        const bot = window.Telegram.WebApp;
+        if (localStorage.fl === undefined) {
+            localStorage.clear()
+            localStorage.fl = false
+        }
+        try {
+            if (localStorage.uid === undefined || localStorage.uid !== bot.initDataUnsafe.user.id) {
+                localStorage.uid = bot.initDataUnsafe.user.id
+            }
+        } catch (err)  {
+
+        }
+
+        const uid = localStorage.uid
+    </script>
+    {# яндекс карта #}
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;coordorder=longlat&amp;apikey={{ yandex_api_key }}" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+    <section class="container" id="categories-wrapper">
+        {% include 'main/__categories.html' %}
+    </section>
+    <section class="container">
+        {% include 'main/new_cart.html' %}
+    </section>
+    <section class="container" id="foods-container">
+        <a id="back-to-menu" onclick="showMenu();" style="position: fixed; top: 1%" class="btn btn-outline-success"><i class="icon icon-arrow-left mr-1"></i>Назад</a>
+        <div id="category-foods-content"></div>
+    </section>
+{% endblock %}
+
+{% block scripts_after %}
+    <script>
+        bot.ready()
+        const deliveryTypeLabel = document.getElementById('accordion-delivery-type-label')
+        const payMethod = document.getElementById('pay_method')
+        const deliveryAddress = document.getElementById('delivery-address')
+        const restaurant = document.getElementById('restaurant')
+        const deliveryTime = document.getElementById('delivery-time')
+
+        document.querySelector('#pay_method').addEventListener('click', updateCartMainButton)
+        document.querySelector('#delivery-time-picker').addEventListener('click', updateDeliveryTimeAvailable)
+        document.querySelector('#delivery-time-picker').addEventListener('blur', checkDeliveryTimeAvailable)
+        document.querySelectorAll('.dropdown-input').forEach(e => e.addEventListener('keyup', searchAddress))
+        document.querySelectorAll('.dropdown-input').forEach(e => e.addEventListener('blur', hideAddressList))
+        document.querySelector('#delivery-comment').addEventListener('click', ()=>{document.getElementById('delivery-comment').scrollIntoView({behavior: "smooth"});})
+
+        const asap = document.getElementById('asap')
+        var area = ''
+        var price = '0'
+        var minOrderValue = '0'
+        showMenu()
+
+        function hideAddressList()  {
+            document.querySelectorAll('.dropdown').forEach((e) => e.classList.remove('active'))
+        }
+
+        function searchAddress(e) {
+            let city = document.querySelector('#delivery-city').value
+            let street = document.querySelector('#delivery-street').value
+            let building = document.querySelector('#delivery-house').value
+            let dropdown = e.target.parentNode
+            dropdown.classList.remove('active')
+            let targetItem = e.target.id.split('-')[1]
+            {#console.log(dropdown, targetItem)#}
+
+            var query = `${city} ${street} ${building}`;
+            var url = `https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address?query=${query}`;
+            var token = "dee7e66fcb26808f5182d9b0feafa0fab3f9c985";
+
+            var options = {
+                method: "GET",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": "Token " + token
+                }
+            }
+
+            fetch(url, options)
+                .then(response => response.text())
+                .then(result => {
+                    let list = []
+                    let data = JSON.parse(result).suggestions
+                    {#console.log(data)#}
+                    let dataItems = {
+                        'street': 'street_with_type',
+                        'house': 'house'
+                    }
+
+                    data.forEach((d) => {if (d.data[targetItem]) list.push(d.data[dataItems[targetItem]])})
+
+                    let resultSet = new Set(list)
+                    let currentList = dropdown.querySelector(`#${targetItem}-list`)
+                    currentList.innerHTML = ''
+                    resultSet.forEach(e => {
+                        let li = $(`<li class="choose-item">${e}</li>`)
+                        $(currentList).append(li)
+                        li.click(chooseAddressItem)
+                    })
+                    dropdown.classList.toggle('active')
+                })
+                .catch(error => console.log("error", error));
+        }
+
+        function chooseAddressItem(e) {
+            let targetItem = e.target.parentNode.id.split('-')[0]
+            document.querySelector(`#delivery-${targetItem}`).value = e.target.innerText
+            document.querySelector(`#${targetItem}-dropdown`).classList.remove('active')}
+
+        function chooseAddress(id, addr) {
+            let e = document.getElementById('accordion-delivery-address');
+            e.click();
+            document.getElementById('addr-txt').innerText = addr;
+            document.getElementById('addr-txt').setAttribute('data-addr-id', id);
+            document.querySelector('#add-address-form').setAttribute('hidden', 'hidden')
+            // getDeliveryCost(addr);
+        }
+
+        function updateDeliveryTimeAvailable() {
+            const timePicker = document.querySelector('#delivery-time-picker')
+            let d = new Date()
+            d.setMinutes(d.getMinutes()+40)
+            let minTime = `${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}`
+            timePicker.removeAttribute('min')
+            timePicker.setAttribute('min', minTime)
+            document.querySelector('#delivery-time-validity').textContent = `Выберите время между ${minTime} и 22:00 или активируйте ползунок "Как можно скорее" ниже`
+        }
+
+        function checkDeliveryTimeAvailable() {
+            let usersTime = new Date()
+            let strTime = document.querySelector('#delivery-time-picker').value
+
+            usersTime.setHours(strTime.split(':')[0])
+            usersTime.setMinutes(strTime.split(':')[1])
+
+            let startTime = new Date()
+            startTime.setMinutes(startTime.getMinutes()+40)
+
+            let endTime = new Date()
+            endTime.setHours(22)
+            endTime.setMinutes(0)
+            endTime.setSeconds(0)
+
+            if (!(usersTime >= startTime && usersTime <= endTime))
+                document.querySelector('#delivery-time-picker').value = `${('0'+startTime.getHours()).slice(-2)}:${('0'+startTime.getMinutes()).slice(-2)}`
+
+            document.querySelector('#delivery-time-validity').textContent = ''
+            updateCartMainButton();
+        }
+
+        function sh(p) {
+            let xhr = new XMLHttpRequest()
+            xhr.onload = function () {
+                let j = JSON.parse(xhr.responseText)
+                document.querySelectorAll('.order_itm_button').forEach((el) => {
+                    {#el.removeAttribute("disabled")#}
+                    el.setAttribute("data-action", 'add')
+                    el.innerHTML = 'В корзину'
+                })
+                if (j['empty'] === false) {
+                    for (let i in j['items']) {
+                        let e = document.getElementById("itm_" + i)
+                        if (e === null) {
+                            continue
+                        }
+                        {#e.setAttribute("disabled", true)#}
+                        e.setAttribute("data-action", 'del')
+                        e.innerHTML = '<i class="icon icon-check"></i>'
+                    }
+                }
+                updateMenuMainButton()
+            }
+            xhr.open("GET", '/api/cart/empty/' + p)
+            xhr.send()
+        }
+
+        function update_cart(id, op, el) {
+            let k = { 'uid': uid, 'fid': id }
+            el.setAttribute("disabled", true)
+            let xhr = new XMLHttpRequest()
+            xhr.open("PATCH", "/api/cart/" + op, true)
+            xhr.onload = function () {
+                {#console.log(xhr.responseText)#}
+                el.removeAttribute('disabled')
+                document.getElementById("itm_" + id + "_count").innerHTML = xhr.responseText
+                document.getElementById('pos_' + id).innerHTML = (parseInt(xhr.responseText) * parseFloat(document.getElementById('food_p_' + id).value)) + "₽"
+                document.getElementById('food_p_' + id).dataset['amount'] = parseInt(xhr.responseText)
+                if (parseInt(xhr.responseText) === 0) {
+                    let elements = document.getElementsByClassName('card_itm_' + id)
+                    while (elements.length > 0) elements[0].remove();
+                }
+                // computeDeliveryCost()
+                updateCartMainButton()
+            }
+            xhr.send(JSON.stringify(k))
+        }
+
+        function add_to_cart(id, el) {
+            bot.MainButton.hide()
+            let xhr = new XMLHttpRequest()
+
+            xhr.onload = function () {
+                sh(localStorage.uid)
+            }
+            xhr.open("PUT", '/api/cart', true)
+            let r = {'id': localStorage.uid, 'fid': id, 'action': el.dataset.action}
+            xhr.send(JSON.stringify(r))
+        }
+
+        function pay() {
+            
+            //l = document.getElementById('upd_btn')
+            bot.MainButton.disable()
+            if (document.querySelectorAll('.pre_total').length < 1) return
+
+            {#проверить что установлен тип#}
+
+            {#если доствка#}
+                {#проверить что установлен адрес#}
+                {#проверить время#}
+            {#если самовывоз#}
+                {#проверить что установлен ресторан#}
+                {#проверить время#}
+            
+            let delivery_address = document.getElementById('addr-txt').dataset['addrId']
+            let foods = document.querySelectorAll('.invoice_info')
+            let invoice = {
+                'uid': localStorage.uid,
+                'foods': {}
+            }
+            for (let f of foods) {
+                invoice['foods'][f.id.split('_')[2]] = {
+                    'amount': f.dataset['amount']
+                }
+            }
+
+            let restraunt_id = -1
+            let dt = document.getElementsByName('delivery_type')
+            for (i in dt) {
+                if (dt[i].checked) {
+                    delivery_type = dt[i].value
+                }
+            }
+            {#da = document.getElementsByName('delivery_addr')#}
+            {#for (i in da) {#}
+            {#    if (da[i].checked) {#}
+            {#        delivery_address = da[i].value}}#}
+            {#console.log(delivery_address)#}
+            {#return#}
+            ri = document.getElementsByName('rest-id')
+            for (i in ri) {
+                if (ri[i].checked) {
+                    restraunt_id = ri[i].value
+                }
+            }
+            
+            invoice['delivery_addr'] = delivery_address
+            // invoice['delivery_type'] = delivery_type
+            // invoice['restraunt_id'] = restraunt_id
+            invoice['prepare_at'] = document.getElementsByName('prepare_at')[0].value
+            invoice['soonest'] = document.getElementsByName('soonest')[0].checked
+            invoice['comment'] = document.getElementById('order-comment').value
+            invoice['pm'] = document.getElementById('pay_method').value
+            invoice['use_bonus'] = document.getElementById('use_bonus').checked
+            invoice['promocode'] = document.getElementById('pc-id-hidden').value
+            let deliveryPrice = 0
+                if (document.querySelector('#delivery-price-value'))
+                    deliveryPrice = parseFloat(document.querySelector('#delivery-price-value').textContent)
+                if (!['Доставка'].includes(deliveryTypeLabel.textContent))
+                    deliveryPrice = 0
+            // invoice['delivery_price'] = deliveryPrice
+
+            console.log("pay")
+
+            xhr = new XMLHttpRequest();
+            xhr.open("POST", "/pay", true)
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    bot.close()
+                } else {
+                    bot.MainButton.enable()
+                }
+            }
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            xhr.send(JSON.stringify(invoice))
+        }
+
+        function getCurrentCart() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `api/get_cart/${uid}`)
+            xhr.responseType = 'json';
+            xhr.send()
+            cart = {}
+            xhr.onload = () => {
+                cart = xhr.response
+            }
+        }
+
+        function showMenu() {
+            bot.MainButton.offClick(pay)
+            bot.MainButton.onClick(showCart)
+            sh(localStorage.uid)
+            menuItems = document.querySelectorAll('.menu-item')
+            for (m of menuItems) {
+                m.removeEventListener('click', chooseAccordeonItem)
+                m.addEventListener('click', chooseAccordeonItem)
+            }
+
+            let cart = document.getElementById('cart')
+            let categories = document.getElementById('categories-wrapper')
+            let foods = document.getElementById('foods-container')
+            categories.style.display = 'block'
+            bot.expand()
+            categories.scrollIntoView({behavior: "smooth"});
+            cart.style.display = 'none';
+            foods.style.display = 'none'
+        }
+
+        function showCart() {
+            {#document.getElementById('add-address').addEventListener('click', showModalAddress)#}
+            document.getElementById('add-address').addEventListener('click', ()=>{
+                if (document.querySelector('#add-address-form').hasAttribute('hidden')) {
+                    document.querySelector('#add-address-form').removeAttribute('hidden')
+                    document.getElementById('add-address').scrollIntoView({behavior: "smooth"});
+                    document.getElementById('add-address').textContent='отменить'
+                } else {
+                    document.querySelector('#add-address-form').setAttribute('hidden', 'hidden')
+                    document.getElementById('add-address').textContent='добавить адрес'
+                }
+            })
+
+            document.querySelectorAll('a[href$="#close-modal-address"]').forEach(e => e.addEventListener('click', hideModalAddress))
+            document.getElementById('save-address').addEventListener('click', saveAddress)
+            document.querySelector('#asap input').addEventListener('change', asapChange)
+
+            getUsersAddresses()
+            deliveryTypeLabel.style.display = "none"
+            // deliveryAddress.style.display = "none"
+            restaurant.style.display = "none"
+            // deliveryTime.style.display = "none"
+            // asap.style.display = "none"
+
+            let cart = document.getElementById('cart')
+            let cartWrapper = document.getElementById('cart-wrapper')
+            let categories = document.getElementById('categories-wrapper')
+            let foods = document.getElementById('foods-container')
+            bot.expand()
+            cart.style.display = 'block';
+            cart.scrollIntoView({behavior: "smooth"});
+            categories.style.display = 'none'
+            foods.style.display = 'none'
+
+            {# запросить козину с сервера #}
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `api/get_cart/${uid}`)
+            xhr.responseType = 'text';
+            xhr.send()
+            xhr.onload = () => {
+                $(cartWrapper).empty()
+                $(cartWrapper).append($(xhr.response))
+
+                {#if (document.querySelector('#addr-txt').textContent !== 'выбрать')#}
+
+                if (!document.querySelector('#accordion-delivery-type-label span'))
+                    chooseAccordeonItem()
+                    // if (document.querySelector('#addr-txt').textContent !== 'выбрать')
+                    //     getDeliveryCost(document.querySelector('#addr-txt').textContent)
+                updateCartMainButton()
+            }
+
+            getUsersBonuses(uid)
+            isfirstOrder()
+        }
+
+        function showCategoryFoods() {
+            bot.MainButton.offClick(pay)
+            bot.MainButton.onClick(showCart)
+            sh(localStorage.uid)
+            menuItems = document.querySelectorAll('.menu-item')
+            for (m of menuItems) {
+                m.removeEventListener('click', chooseAccordeonItem)
+                m.addEventListener('click', chooseAccordeonItem)
+            }
+
+            let cart = document.getElementById('cart')
+            let categories = document.getElementById('categories-wrapper')
+            let foods = document.getElementById('foods-container')
+            {#categories.style.display = 'none'#}
+            bot.expand()
+            categories.scrollIntoView({behavior: "smooth"});
+            cart.style.display = 'none';
+            categories.style.display = 'none';
+            foods.style.display = '';
+        }
+
+        function updateMenuMainButton() {
+            bot.MainButton.offClick(pay)
+            bot.MainButton.enable()
+            if (document.querySelectorAll('.order_itm_button[data-action="del"]').length > 0) {
+                bot.MainButton.setParams({
+                    'text': `В корзину`,
+                    'color': '#120089',})
+                bot.MainButton.onClick(showCart)
+                bot.MainButton.show()
+            } else {
+                {#bot.MainButton.hide()#}
+            }
+        }
+
+        function updateCartMainButton() {
+            // console.log(document.getElementById('pay_method').value)
+            // console.log(payMethod.textContent)
+            let now = new Date()
+            let startTime = new Date()
+            startTime.setHours({{ orders_start_time.split(':')[0] | int }})
+            startTime.setMinutes({{ orders_start_time.split(':')[1] | int }})
+            startTime.setSeconds({{ orders_start_time.split(':')[2] | int }})
+            let endTime = new Date()
+            endTime.setHours({{ orders_end_time.split(':')[0] | int }})
+            endTime.setMinutes({{ orders_end_time.split(':')[1] | int }})
+            endTime.setSeconds({{ orders_end_time.split(':')[2] | int }})
+
+            if (!(startTime <= now && now <= endTime)) {
+                let orderVerb = 'Оплатить'
+                // if (['Доставка'].includes(deliveryTypeLabel.textContent)) orderVerb = 'Оплатить'
+                // if (['Наличными при получении','Картой при получении'].includes(payMethod.textContent)) orderVerb = 'Заказать на'
+                if ((document.getElementById('pay_method').value === 'card in place') | (document.getElementById('pay_method').value === 'cash') ) orderVerb = 'Заказать на'
+                // if (!(['Доставка', 'С собой', 'На месте'].includes(deliveryTypeLabel.textContent))) {
+                //     bot.MainButton.offClick(pay)
+                //     bot.MainButton.hide()
+                //     return
+                // }
+
+                // if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (document.querySelector('#addr-txt').textContent === 'выбрать'))  {
+                //     bot.MainButton.offClick(pay)
+                //     bot.MainButton.hide()
+                //     return
+                // }
+
+                if (document.querySelector('#addr-txt').textContent === 'выбрать') {
+                    bot.MainButton.offClick(pay)
+                    bot.MainButton.hide()
+                    return
+                }
+
+                if (document.querySelector('#delivery-time-picker').value === '') {
+                    bot.MainButton.offClick(pay)
+                    bot.MainButton.hide()
+                    return
+                }
+
+                // if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (!document.querySelector('#delivery-price-value'))) {
+                //     bot.MainButton.offClick(pay)
+                //     bot.MainButton.hide()
+                //     return
+                // }
+
+                let totals = document.querySelectorAll('.pre_total')
+
+                if (totals.length < 1)  {
+                    bot.MainButton.offClick(pay)
+                    bot.MainButton.hide()
+                } else {
+                    {# todo поверить, что выбран тип, адрес или ресторан #}
+
+                    let deliveryPrice = 0
+                    if (document.querySelector('#delivery-price-value'))
+                        deliveryPrice = parseFloat(document.querySelector('#delivery-price-value').textContent)
+                    if (!['Доставка'].includes(deliveryTypeLabel.textContent))
+                        deliveryPrice = 0
+
+                    bot.MainButton.setParams({
+                        'text': `${orderVerb} ${get_total()+deliveryPrice}₽`,
+                        'color': '#218555'})
+                    bot.MainButton.onClick(pay)
+                    bot.MainButton.enable()
+                    bot.MainButton.show()
+                }
+            } else {
+                bot.MainButton.offClick(pay)
+                bot.MainButton.setParams({
+                    'text': `Заказы доступны с ${('0'+startTime.getHours()).slice(-2)}:${('0'+startTime.getMinutes()).slice(-2)} до ${('0'+endTime.getHours()).slice(-2)}:${('0'+endTime.getMinutes()).slice(-2)}`,
+                    'color': '#afafaf'})
+                bot.MainButton.disable()
+            }
+        }
+
+        function get_total() {
+            let totals = document.querySelectorAll('.pre_total')
+            let total = 0
+            totals.forEach(el => total += parseFloat(el.textContent.split('₽')[0]))
+            return total
+        }
+
+        function getUsersAddresses() {
+            {# получить адреса пользователя #}
+            {#$('#addresses-list').empty()#}
+            let xhr_addr_list = new XMLHttpRequest()
+            xhr_addr_list.open('get', `/api/get_user_addresses/${uid}`)
+            xhr_addr_list.responseType = 'json'
+            let user_addresses = {}
+            xhr_addr_list.onload = () => {
+                {#console.log(xhr_addr_list.response)#}
+                document.querySelector('#addresses-list').innerHTML = ''
+                for (let a of xhr_addr_list.response) {
+                    $('#user-addresses-ids').append($(`<input type="radio" id="addr-${a.id}" value="${a.id}" name='delivery_addr' hidden>`))
+                    $('#addresses-list').append($(`
+                    <li
+                    class="menu-item"
+                    onclick="chooseAddress(${a.id}, '${a.addr}');">
+                    <a>
+                        <label for='addr-${a.id}'><b>${a.name}</b></label>
+                        <p style="font-size: 10px">${a.addr}</p>
+                    </a>
+                    </li>`))
+                }
+            }
+            xhr_addr_list.send()
+        }
+
+        function chooseAccordeonItem() {
+            if (['На месте', 'С собой'].includes(deliveryTypeLabel.innerText)) {
+                restaurant.style.display = ""
+                deliveryTime.querySelector('.delivery-time').innerText = 'Время самовывоза'
+                deliveryTime.style.display = ""
+                asap.style.display = ""
+                $('#asap input')[0].checked = false
+                deliveryAddress.style.display = "none"
+                {#document.getElementById('pm_c_c').setAttribute('disabled', 'true')#}
+                {#document.getElementById('pm_c').removeAttribute('disabled')#}
+            } else {
+                if (!document.querySelector('#asap input').checked)
+                    deliveryAddress.style.display = ""
+                    getUsersAddresses()
+                restaurant.style.display = "none"
+                deliveryTime.querySelector('.delivery-time').innerText = 'Время уборки'
+                deliveryTime.style.display = ""
+                asap.style.display = ""
+                $('#asap input')[0].checked = false
+                asap.removeAttribute('checked')
+                console.log(asap)
+                {#document.getElementById('pm_c_c').removeAttribute('disabled')#}
+                {#document.getElementById('pm_c').setAttribute('disabled', 'true')#}
+            }
+            updateCartMainButton()
+        }
+
+        function showModal(id) {
+            let modal = document.getElementById(id)
+            modal.classList.add('active')
+        }
+
+        function hideModal(id) {
+            let modal = document.getElementById(id)
+            modal.classList.remove('active')
+        }
+
+        function showModalAddress() {
+            let modal = document.getElementById('modal-address')
+            modal.classList.add('active')
+        }
+
+        function hideModalAddress() {
+            let modal = document.getElementById('modal-address')
+            modal.classList.remove('active')
+        }
+
+        function saveAddress() {
+            let form = document.querySelector('#add-address-form')
+            let city = form.querySelector('#delivery-city').value
+            let street = form.querySelector('#delivery-street').value
+            let house = form.querySelector('#delivery-house').value
+            let entrance = form.querySelector('#delivery-entrance').value
+            let floor = form.querySelector('#delivery-floor').value
+            let flat = form.querySelector('#delivery-flat').value
+            let comment = form.querySelector('#delivery-comment').value
+            let name = form.querySelector('#delivery-name').value
+            let addr = `${city}, ${street}, д ${house}, подъезд ${entrance}, этаж ${floor}, кв ${flat}, ${comment}`
+            xhr = new XMLHttpRequest();
+            xhr.open("POST", "/saveAddress", true)
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            address = {
+                uid: uid,
+                address: addr,
+                name: name
+            }
+            xhr.send(JSON.stringify(address))
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    let modal = document.getElementById('modal-address')
+                    let list = document.getElementById('addresses-list')
+                    document.getElementById('addr-txt').innerText = document.getElementById('input-address').value
+                    addr_id = xhr.responseText
+                    $('#user-addresses-ids').append($(`<input type="radio" id="addr-${addr_id}" value="${addr_id}" name='delivery_addr' hidden>`))
+                    $('#addresses-list').append($(`
+                    <li
+                        class="menu-item"
+                        onclick="chooseAddress(${addr_id}, '${addr}');">
+                    <a>
+                        <label for='addr-${addr_id}'><b>${name}</b></label>
+                        <p style="font-size: 10px">${addr}</p>
+                    </a>
+                    </li>`))
+                    document.querySelector('#add-address-form').setAttribute('hidden', 'hidden')
+                    document.getElementById('add-address').textContent='добавить адрес'
+                    document.querySelector('#addresses-list').lastChild.click()
+                }
+            }
+        }
+
+        function asapChange(e) {
+            if (e.target.checked) {
+                checkDeliveryTimeAvailable()
+                deliveryTime.style.display = "none"
+            } else {
+                deliveryTime.style.display = ""
+                checkDeliveryTimeAvailable()
+            }
+        }
+
+        function getDeliveryCost(addr) {
+            let searchStr = addr.split(',').slice(0,4).join(' ')
+            document.querySelector('#map').innerHTML = ''
+            document.querySelector('#map').style.height = '300px'
+            ymaps.ready(init);
+            var zone
+
+            function init() {
+                var myMap = new ymaps.Map('map', {
+                        center: [127.530955, 50.265904],
+                        zoom: 10,
+                        controls: ['geolocationControl', 'searchControl']
+                    }),
+                    deliveryPoint = new ymaps.GeoObject({
+                        geometry: {type: 'Point'},
+                        properties: {iconCaption: 'Адрес'}
+                    }, {
+                        preset: 'islands#blackDotIconWithCaption',
+                        draggable: true,
+                        iconCaptionMaxWidth: '215'
+                    }),
+                    searchControl = myMap.controls.get('searchControl');
+                searchControl.options.set({noPlacemark: true, placeholderContent: 'Введите адрес доставки'});
+                myMap.geoObjects.add(deliveryPoint);
+
+                function onZonesLoad(json) {
+                    // Добавляем зоны на карту.
+                    var deliveryZones = ymaps.geoQuery(json).addToMap(myMap);
+                    // Задаём цвет и контент балунов полигонов.
+                    deliveryZones.each(function (obj) {
+                        obj.options.set({
+                            fillColor: obj.properties.get('fill'),
+                            fillOpacity: obj.properties.get('fill-opacity'),
+                            strokeColor: obj.properties.get('stroke'),
+                            strokeWidth: obj.properties.get('stroke-width'),
+                            strokeOpacity: obj.properties.get('stroke-opacity')
+                        });
+                        obj.properties.set('balloonContent', obj.properties.get('description'));
+                    });
+
+                    // Проверим попадание результата поиска в одну из зон доставки.
+                    searchControl.events.add('resultshow', function (e) {
+                        highlightResult(searchControl.getResultsArray()[e.get('index')]);
+                    });
+
+                    {#преобразовать адрес в объект#}
+                    searchObj = ymaps.geocode(searchStr, {results: 1})
+                        .then((res) => {
+                            highlightResult(res.geoObjects.get(0))
+                        })
+
+                    // Проверим попадание метки геолокации в одну из зон доставки.
+                    myMap.controls.get('geolocationControl').events.add('locationchange', function (e) {
+                        highlightResult(e.get('geoObjects').get(0));
+                    });
+
+                    // При перемещении метки сбрасываем подпись, содержимое балуна и перекрашиваем метку.
+                    deliveryPoint.events.add('dragstart', function () {
+                        deliveryPoint.properties.set({iconCaption: '', balloonContent: ''});
+                        deliveryPoint.options.set('iconColor', 'black');
+                    });
+
+                    // По окончании перемещения метки вызываем функцию выделения зоны доставки.
+                    deliveryPoint.events.add('dragend', function () {
+                        highlightResult(deliveryPoint);
+                    });
+
+                    function highlightResult(obj) {
+                        // Сохраняем координаты переданного объекта.
+                        var coords = obj.geometry.getCoordinates(),
+                        // Находим полигон, в который входят переданные координаты.
+                            polygon = deliveryZones.searchContaining(coords).get(0);
+
+                        if (polygon) {
+                            // Уменьшаем прозрачность всех полигонов, кроме того, в который входят переданные координаты.
+                            deliveryZones.setOptions('fillOpacity', 0.4);
+                            polygon.options.set('fillOpacity', 0.8);
+
+                            zone = polygon
+                            {#console.log(zone.properties._data.description)#}
+
+                            // Перемещаем метку с подписью в переданные координаты и перекрашиваем её в цвет полигона.
+                            deliveryPoint.geometry.setCoordinates(coords);
+                            deliveryPoint.options.set('iconColor', polygon.properties.get('fill'));
+
+                            // Задаем подпись для метки.
+                            if (typeof(obj.getThoroughfare) === 'function') {
+                                setData(obj);
+                            } else {
+                                // Если вы не хотите, чтобы при каждом перемещении метки отправлялся запрос к геокодеру,
+                                // закомментируйте код ниже.
+                                {#ymaps.geocode(coords, {results: 1}).then(function (res) {#}
+                                {#    var obj = res.geoObjects.get(0);#}
+                                {#    setData(obj);});#}
+                            }
+                        } else {
+                            // Если переданные координаты не попадают в полигон, то задаём стандартную прозрачность полигонов.
+                            deliveryZones.setOptions('fillOpacity', 0.4);
+                            // Перемещаем метку по переданным координатам.
+                            deliveryPoint.geometry.setCoordinates(coords);
+                            // Задаём контент балуна и метки.
+                            deliveryPoint.properties.set({
+                                iconCaption: 'В этот район не доставляем',
+                                balloonContent: 'Cвяжитесь с оператором',
+                                balloonContentHeader: ''
+                            });
+                            // Перекрашиваем метку в чёрный цвет.
+                            deliveryPoint.options.set('iconColor', 'black');
+                        }
+
+                        function setData(obj){
+                            {#console.log(obj)#}
+                            var address = [obj.getThoroughfare(), obj.getPremiseNumber(), obj.getPremise()].join(' ');
+                            if (address.trim() === '') {
+                                address = obj.getAddressLine();
+                            }
+                            zone = polygon
+                            {#var price = polygon.properties.get('description');#}
+                            area = zone.properties._data.description.split(';')[0]
+                            price = zone.properties._data.description.split(';')[1]
+                            minOrderValue = zone.properties._data.description.split(';')[2]
+                            {#console.log(price)#}
+                            {#price = price.match(/<strong>(.+)<\/strong>/)[1];#}
+                            let final_price = parseFloat(price)
+                            if (get_total() >= parseFloat(minOrderValue))
+                                final_price = 0
+
+                            deliveryPoint.properties.set({
+                                iconCaption: 'Доставка ' + final_price + '₽'
+                                {#iconCaption: address,#}
+                                {#balloonContent: address,#}
+                                {#balloonContentHeader: price#}
+                            });
+                            // computeDeliveryCost();
+                            {#updateCartMainButton();#}
+                        }
+                    }
+                }
+
+                $.ajax({
+                    url: 'data.geojson',
+                    dataType: 'json',
+                    success: onZonesLoad
+                });
+            }
+        }
+
+        function computeDeliveryCost() {
+            document.querySelector('#delivery-area').removeAttribute('hidden')
+            document.querySelector('#delivery-cost').removeAttribute('hidden')
+            document.querySelector('#delivery-free-min-cost').removeAttribute('hidden')
+            document.querySelector('#delivery-total-cost').removeAttribute('hidden')
+            document.querySelector('#delivery-area').innerHTML = `<b>${area}</b>`
+            document.querySelector('#delivery-cost').innerHTML = `Цена доставки до вашего адреса: <b>${price}₽</b>`
+            document.querySelector('#delivery-free-min-cost').innerHTML = `Cумма заказа для бесплатной доставки: <b>${minOrderValue}₽</b>`
+            if (get_total() >= parseFloat(minOrderValue)) {
+                document.querySelector('#delivery-total-cost').innerHTML = `Цена доставки вашего заказа: <b id='delivery-price-value'>${0}₽</b>`
+            } else
+                document.querySelector('#delivery-total-cost').innerHTML = `Цена доставки вашего заказа: <b id='delivery-price-value'>${price}₽</b>`
+            updateCartMainButton();
+        }
+
+        function getUsersBonuses(uid) {
+            let xhr_bonus = new XMLHttpRequest()
+            xhr_bonus.open('get', `/api/get_users_bonuses/${uid}`)
+            xhr_bonus.onload = ()=>{
+                if (parseInt(xhr_bonus.response) > 0) {
+                    document.getElementById('user-bonus-amount').innerText = `(на счету ${xhr_bonus.response})`
+                    document.getElementById('bonus-payment').style.display = ''
+                } else
+                    document.getElementById('bonus-payment').style.display = 'none'
+            }
+            xhr_bonus.send()
+        }
+        {#проверка промокода#}
+        let tt;
+        function checkCode(evnt) {
+            if (evnt.keyCode === 13) {
+                document.activeElement.blur()
+                e = document.getElementById('promocode')
+                e.toggleAttribute('disabled')
+                el = document.getElementById('pc-status')
+                el.classList.toggle('loading')
+                el.classList.remove('icon-check')
+                el.classList.remove('icon-cross')
+                xhr_pc = new XMLHttpRequest()
+                xhr_pc.open("GET", '/api/checkcode?code=' + e.value + '&uid=' + uid)
+                xhr_pc.responseType = 'json'
+                xhr_pc.onload = function () {
+                    el.classList.toggle('loading')
+                    e.toggleAttribute('disabled')
+                    const j = xhr_pc.response
+                    if (j.valid &&  j.enabled) {
+                        document.getElementById('pc-id-hidden').value = j.id
+                        document.getElementById('pc-desc').removeAttribute('hidden')
+                        {#document.getElementById('pc-desc-t').innerText = j.desc#}
+                        document.getElementById('pc-desc-d').innerText = j.desc
+                        el.classList.add('icon-check')
+                    } else {
+                        document.getElementById('pc-id-hidden').value = ''
+                        document.getElementById('pc-desc').setAttribute('hidden', true)
+                        {#document.getElementById('pc-desc-t').innerText = ''#}
+                        document.getElementById('pc-desc-d').innerText = j.desc
+                        el.classList.remove('icon-check')
+                    }
+                }
+                xhr_pc.send()
+            }
+        }
+
+        function isfirstOrder() {
+            let firstOrderXHR = new XMLHttpRequest()
+            firstOrderXHR.responseType = 'text'
+            firstOrderXHR.open('get', `/api/is_first_order/${uid}`)
+            firstOrderXHR.onload = ()=>{
+                if (firstOrderXHR.status === 200) {
+                    if (document.getElementById('pc-id-hidden').value === '') {
+                        let e = document.getElementById('promocode')
+                        e.toggleAttribute('disabled')
+                        let  el = document.getElementById('pc-status')
+                        el.classList.toggle('loading')
+                        el.classList.remove('icon-check')
+                        el.classList.remove('icon-cross')
+                        let xhr_pc = new XMLHttpRequest()
+                        xhr_pc.open("GET", '/api/checkcode?code=Привет' + '&uid=' + uid)
+                        xhr_pc.responseType = 'json'
+                        xhr_pc.onload = function () {
+                            el.classList.toggle('loading')
+                            e.toggleAttribute('disabled')
+                            const j = xhr_pc.response
+                            if (j.valid &&  j.enabled) {
+                                document.getElementById('promocode').value = 'Привет'
+                                document.getElementById('promocode').toggleAttribute('disabled')
+                                document.getElementById('pc-id-hidden').value = j.id
+                                document.getElementById('pc-desc').removeAttribute('hidden')
+                                {#document.getElementById('pc-desc-t').innerText = j.desc#}
+                                document.getElementById('pc-desc-d').innerText = j.desc
+                                el.classList.add('icon-check')
+                            } else {
+                                document.getElementById('pc-id-hidden').value = ''
+                                document.getElementById('pc-desc').setAttribute('hidden', true)
+                                {#document.getElementById('pc-desc-t').innerText = ''#}
+                                document.getElementById('pc-desc-d').innerText = j.desc
+                                el.classList.remove('icon-check')
+                            }
+                        }
+                        xhr_pc.send()
+                    }
+                }
+            }
+            firstOrderXHR.send()
+        }
+
+        {#кнопка "в меню"#}
+        let toMenuBtn = document.getElementById('to-menu')
+        toMenuBtn.addEventListener('click', showMenu)
+
+        {#по нажатию на интер убираем клавиатуру#}
+        document.querySelector('#order-comment').addEventListener('keypress', (e)=>{if (e.keyCode === 13) document.activeElement.blur()})
+        {#обработка промокода#}
+        document.querySelector('#promocode').addEventListener('keypress', checkCode)
+    </script>
+
+    <script>
+        function getFoodList(category) {
+            $('#category-foods-content').empty();
+            {# забираем список товаров с сервера #}
+            let xhrFoods = new XMLHttpRequest()
+            xhrFoods.open('get', `/api/get_category_foods/${category}`)
+            xhrFoods.responseType = 'text'
+            xhrFoods.onload = ()=>{
+                if (xhrFoods.status === 200) {
+                    showCategoryFoods();
+                    $('#category-foods-content').append(xhrFoods.response)
+                }
+            }
+            xhrFoods.send()
+        }
+    </script>
+{% endblock %}

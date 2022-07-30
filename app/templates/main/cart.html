@@ -1,0 +1,500 @@
+{% extends 'main/base_spectre.j2' %}
+
+{% block content %}
+<script>
+    var delivery_type = ''
+    var delivery_address = ''
+    var comment = ''
+    function upd_pg() {
+        window.location.reload()
+    }
+    function back() {
+        location.pathname = '/menu'
+    }
+</script>
+
+<script>
+    var tt;
+    function checkCode() {
+        e = document.getElementById('promocode')
+        e.toggleAttribute('disabled')
+        el = document.getElementById('pc-status')
+        el.classList.toggle('loading')
+        el.classList.remove('icon-check')
+        el.classList.remove('icon-cross')
+        xhr_pc = new XMLHttpRequest()
+        xhr_pc.open("GET", '/api/checkcode?code=' + e.value)
+        xhr_pc.onload = function () {
+            el.classList.toggle('loading')
+            e.toggleAttribute('disabled')
+            j = JSON.parse(xhr_pc.responseText)
+            if (!j.valid) {
+                el.classList.add('icon-cross');
+                return
+            }
+            if (!j.enabled) {
+                el.classList.add('icon-cross');
+                return
+            }
+            document.getElementById('pc-id-hidden').value = j.id
+            document.getElementById('pc-desc').removeAttribute('hidden')
+            document.getElementById('pc-desc-t').innerText = j.desc
+            document.getElementById('pc-desc-d').innerText = "Скидка:"+(j.discount*100)+"%"
+            el.classList.add('icon-check')
+        }
+        xhr_pc.send()
+    }
+</script>
+{#<button onclick="back()">back</button>#}
+<!-- <button onclick="upd_pg()" id="upd_btn">update</button> -->
+<script>
+    function update_cart(id, op, el) {
+        k = { 'uid': uid, 'fid': id }
+
+        //console.log(k)
+        //document.getElementById('dbg').write(k)
+        el.setAttribute("disabled", true)
+        xhr = new XMLHttpRequest()
+        xhr.open("PATCH", "/api/cart/" + op, true)
+        xhr.onload = function () {
+            el.removeAttribute('disabled')
+            document.getElementById("itm_" + id + "_count").innerHTML = xhr.responseText
+            document.getElementById('pos_' + id).innerHTML = (parseInt(xhr.responseText) * parseFloat(document.getElementById('food_p_' + id).value)) + "₽"
+            document.getElementById('food_p_' + id).dataset['amount'] = parseInt(xhr.responseText)
+            if (parseInt(xhr.responseText) == 0) {
+                elements = document.getElementsByClassName('card_itm_' + id)
+                while (elements.length > 0) elements[0].remove();
+            }
+            bot.MainButton.setParams({
+                'text': `Оплатить ${get_total()}₽`,
+                'color': '#218555',
+            })
+        }
+        xhr.send(JSON.stringify(k))
+    }
+</script>
+<main style="background-color: lightgrey; padding-bottom: 5%">
+    <a href="{{ url_for('main.category_list') }}" class="mt-2 mb-2"><i class="icon icon-arrow-left mr-1"></i>Меню</a>
+    <h2>Корзина</h2>
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
+        {% for i in g.cart %}
+        <div class="columns card_itm_{{i.food}}">
+            <div class="column col-4">
+                <img loading="lazy"
+                    src="{{url_for('static', filename='uploads/'+g.photo.query.filter_by(belongs_to=i.food).order_by('main', 'id').first().filename)}}"
+                    class="img-responsive flex-centered" style="border-radius: 50%; width: 80px; height: 80px; ">
+            </div>
+            <div class="column col-6">
+                {% set f=g.food.query.filter_by(id=i.food).first() %}
+                <p>{{ f.food_name }}</p>
+            </div>
+        </div>
+        <div class="columns card_itm_{{i.food}}">
+            <div class="column col-2"></div>
+            <div class="column col-10">
+                <b>{{ f.price }}₽ х <span id="itm_{{i.food}}_count">{{ i.amount }}</span></b>
+                <input class="invoice_info" type="text" hidden id="food_p_{{i.food}}" data-amount="{{ i.amount }}"
+                    value="{{f.price}}">
+                <button style="border-radius: 10px 0 0 10px; color: black;" class="d-inline"
+                    onclick="update_cart({{i.food}}, 'dec', this)">-</button>
+                <button style="border-radius: 0 10px 10px 0; color: black;" class="d-inline"
+                    onclick="update_cart({{i.food}}, 'add', this)">+</button>
+                <span class="pre_total" id='pos_{{i.food}}'>{{i.amount*f.price}}₽</span>
+            </div>
+        </div>
+        {% if not loop.last %}
+        <hr class="card_itm_{{i.food}}">
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
+        <div id="delivery-type" class="columns">
+            <div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип доставки</span></div>
+            <!-- mutually exclusive Accordions example (with same input names) -->
+            <div class="column col-7 text-right">
+                <input type="radio" name="delivery_type" id="dt-1" value="delivery" hidden>
+                <input type="radio" name="delivery_type" id="dt-2" value="at-place" hidden>
+                <input type="radio" name="delivery_type" id="dt-3" value="self-checkout" hidden>
+                <div class="accordion">
+                    <input type="checkbox" id="accordion-delivery-type" name="accordion-checkbox" hidden>
+                    <label id="accordion-delivery-type-label" class="accordion-header c-hand"
+                        for="accordion-delivery-type">
+                        <span>выбрать</span><i class="icon icon-arrow-right"></i>
+                    </label>
+                    <div class="accordion-body">
+                        <!-- Accordions content -->
+                        <ul class="menu menu-nav">
+                            {% if g.delivery_available %}
+                            <li class=" menu-item"><a
+                                    onclick="document.getElementById('dt-1').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">Доставка</a>
+                            </li>
+                            {%endif%}
+                            <li class=" menu-item"><a
+                                    onclick="document.getElementById('dt-2').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">На
+                                    месте</a></li>
+                            <li class=" menu-item"><a
+                                    onclick="document.getElementById('dt-3').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">С
+                                    собой</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="column col-12">
+                <hr>
+            </div>
+        </div>
+        <div id="delivery-address" class="columns">
+            <div class="column col-5"><i class="icon icon-location mr-2"></i><span>Адрес</span></div>
+            <!-- mutually exclusive Accordions example (with same input names) -->
+            <div class="column col-7 text-right">
+                {% for a in g.u.get_addresses() %}
+                <input type="radio" id="addr-{{a.id}}" value="{{a.id}}" name='delivery_addr' hidden>
+                {% endfor %}
+                <div class="accordion">
+                    <input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox" hidden>
+                    <label id="accordion-delivery-address-label" class="accordion-header c-hand"
+                        for="accordion-delivery-address">
+                        <span id="addr-txt">выбрать</span><i class="icon icon-arrow-right"></i>
+                    </label>
+                    <div class="accordion-body">
+                        <!-- Accordions content -->
+                        <ul id="addresses-list" class="menu menu-nav">
+                            {# забираем список адресов пользователя #}
+                            {% for a in g.u.get_addresses() %}
+                            <li class="menu-item"
+                                onclick="e=document.getElementById('accordion-delivery-address'); e.click(); document.getElementById('addr-txt').innerText='{{a.addr}}'">
+                                <a><label for='addr-{{a.id}}'>{{ a.addr }}</label></a></li>
+                            {% endfor %}
+                            <a id="add-address" class="btn mt-2">добавить адрес</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="column col-12">
+                <hr>
+            </div>
+        </div>
+        <div id="restaurant" class="columns">
+            <div class="column col-5"><i class="icon icon-location mr-2"></i><span>Ресторан</span></div>
+            <div class="column col-7 text-right">
+                {% for i in g.restaraunts %}
+                <input type="radio" value="{{i.id}}" hidden name="rest-id" id="rest-{{i.id}}">
+                {%endfor%}
+                <div class="accordion">
+                    <input type="checkbox" id="accordion-restaurant" name="accordion-checkbox" hidden>
+                    <label class="accordion-header c-hand" for="accordion-restaurant">
+                        <span id="rest-addr">Выбрать</span></i>
+                    </label>
+                    <div class="accordion-body">
+                        <!-- Accordions content -->
+                        <ul class="menu menu-nav">
+                            {% for i in g.restaraunts %}
+                            <li class="menu-item"><a
+                                    onclick="document.getElementById('rest-{{i.id}}').click(); document.getElementById('rest-addr').innerText=this.innerText; document.getElementById('accordion-restaurant').click()">{{i.addr}}</a>
+                            </li>
+                            {%endfor%}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="column col-12">
+                <hr>
+            </div>
+        </div>
+        <div id="delivery-time" class="columns">
+            <div class="column col-6"><i class="icon icon-time mr-2"></i><span class="delivery-time">Время
+                    доставки</span></div>
+            <div class="column col-6 text-right">
+                {# <span>выбрать</span><i class="icon icon-arrow-right"></i> #}
+                <input id="delivery-time-picker" type="time" name="prepare_at" style="width: 50%">
+            </div>
+            <div class="column col-12">
+                <hr>
+            </div>
+        </div>
+        <div id="asap" class="columns">
+            <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Как можно скорее</span></div>
+            <div class="column col-5">
+                <label class="form-switch float-right">
+                    <input name="soonest" type="checkbox"><i class="form-icon"></i>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
+        <div class="columns" onclick="showModal('modal-comment')">
+            <div class="column col-8"><i class="icon icon-message mr-2"></i><span>Оставить комментарий</span></div>
+            <div class="column col-4 text-right"><span></span><i class="icon icon-arrow-right"></i></div>
+        </div>
+    </div>
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
+        <div class="columns">
+            <div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип оплаты</span></div>
+            <div class="column col-7 text-right">
+                <select id="pay_method" name="pay_method" class="form-select">
+                    <option selected value="card">Карта</option>
+                    <option id="pm_c" value="cash" disabled>Наличными</option>
+                    <option id="pm_c_c" value="courier_cash" disabled>Наличными курьеру</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
+        <div class="columns">
+            <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Применить промокод</span></div>
+            <div class="column col-5 ">
+                <div class="has-icon-right">
+                    <input type="text" class=" form-input" maxlength="16" id="promocode" onkeydown="clearTimeout(tt)"
+                        onkeyup="clearTimeout(tt); tt=setTimeout(checkCode, 1500)">
+                    <i id="pc-status" class="form-icon icon"></i>
+                </div>
+                <div>
+                    <input type="hidden" id="pc-id-hidden">
+                    <div id="pc-desc" class=" desc mx-0 columns" hidden>
+                        <span class="col mr-2" id="pc-desc-t"></span>
+                        <span class="col" id="pc-desc-d"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%" {{'' if g.u.bonus_pts
+        else 'hidden' }}>
+        <div class="columns">
+            <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Оплатить бонусами</span></div>
+            <div class="column col-5 text-right">
+                <label class="form-switch float-right">
+                    <input type="checkbox" id="use_bonus"><i class="form-icon"></i>
+                    <span>{{g.u.bonus_pts}} Б.</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    {# модальное окно добавления адреса #}
+    <div class="modal" id="modal-address">
+        <a href="#close-modal-address" class="modal-overlay" aria-label="Close"></a>
+        <div class="modal-container">
+            <div class="modal-header">
+                <a href="#close-modal-address" class="btn btn-clear float-right" aria-label="Close"></a>
+                <div class="modal-title h5">Добавить новый адрес</div>
+            </div>
+            <div class="modal-body">
+                <div class="content">
+                    <!-- content here -->
+                    <div class="form-group">
+                        <label class="form-label" for="input-address">Введите адрес ниже</label>
+                        <textarea class="form-input" id="input-address" placeholder="ул. Ленина 12, 7 подъезд, кв.  18"
+                            rows="3"></textarea>
+                        <button id="save-address" class="btn btn-primary input-group-btn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" id="modal-comment">
+        <a href="#close-modal-comment" onclick="hideModal('modal-comment')" class="modal-overlay"
+            aria-label="Close"></a>
+        <div class="modal-container">
+            <div class="modal-header">
+                <a href="#close-modal-comment" onclick="hideModal('modal-comment')" class="btn btn-clear float-right"
+                    aria-label="Close"></a>
+                <div class="modal-title h5">Комментарий к заказу</div>
+            </div>
+            <div class="modal-body">
+                <div class="content">
+                    <!-- content here -->
+                    <div class="form-group">
+                        <label class="form-label" for="input-comment">Комментарий к заказу</label>
+                        <textarea class="form-input" id="input-comment" placeholder="Хочу чтобы было вкусно"
+                            rows="3"></textarea>
+                        <button id="save-comment" class="btn btn-primary input-group-btn"
+                            onclick="comment=document.getElementById('input-comment').value">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    bot.MainButton.setParams({
+        'text': `Оплатить ${get_total()}₽`,
+        'color': '#218555',
+    })
+
+    function pay() {
+        //l = document.getElementById('upd_btn')
+        let foods = document.querySelectorAll('.invoice_info')
+        let invoice = {
+            'uid': localStorage.uid,
+            'foods': {}
+        }
+        for (let f of foods) {
+            invoice['foods'][f.id.split('_')[2]] = {
+                'amount': f.dataset['amount']
+            }
+        }
+
+        let restraunt_id = -1
+        dt = document.getElementsByName('delivery_type')
+        for (i in dt) {
+            if (dt[i].checked) {
+                delivery_type = dt[i].value
+            }
+        }
+        da = document.getElementsByName('delivery_addr')
+        for (i in da) {
+            if (da[i].checked) {
+                delivery_address = da[i].value
+            }
+        }
+        ri = document.getElementsByName('rest-id')
+        for (i in ri) {
+            if (ri[i].checked) {
+                restraunt_id = ri[i].value
+            }
+        }
+        //l.innerText = 1
+        invoice['delivery_addr'] = delivery_address
+        invoice['delivery_type'] = delivery_type
+        invoice['restraunt_id'] = restraunt_id
+        invoice['prepare_at'] = document.getElementsByName('prepare_at')[0].value
+        invoice['soonest'] = document.getElementsByName('soonest')[0].checked
+        invoice['comment'] = comment
+        invoice['pm'] = document.getElementById('pay_method').value
+        invoice['use_bonus'] = document.getElementById('use_bonus').checked
+        invoice['promocode'] = document.getElementById('pc-id-hidden').value
+
+        xhr = new XMLHttpRequest();
+        xhr.open("POST", "/pay", true)
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                bot.close()
+            }
+        }
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        xhr.send(JSON.stringify(invoice))
+    }
+
+    bot.MainButton.onClick(pay)
+    bot.MainButton.show()
+
+    function get_total() {
+        let totals = document.querySelectorAll('.pre_total')
+        let total = 0
+        totals.forEach(el => total += parseFloat(el.textContent.split('₽')[0]))
+        if (total === 0) bot.close()
+        return total
+    }
+
+    menuItems = document.querySelectorAll('.menu-item')
+        for (m of menuItems) {
+            m.addEventListener('click', chooseAccordeonItem)
+        }
+
+    document.getElementById('add-address').addEventListener('click', showModalAddress)
+    document.querySelectorAll('a[href$="#close-modal-address"]').forEach(e => e.addEventListener('click', hideModalAddress))
+    document.getElementById('save-address').addEventListener('click', saveAddress)
+    document.querySelector('#asap input').addEventListener('change', asapChange)
+
+    let deliveryAddress = document.getElementById('delivery-address')
+    let restraunt = document.getElementById('restaurant')
+    let deliveryTime = document.getElementById('delivery-time')
+    let asap = document.getElementById('asap')
+    deliveryAddress.style.display = "none"
+    restraunt.style.display = "none"
+    deliveryTime.style.display = "none"
+    asap.style.display = "none"
+
+    function chooseAccordeonItem(e) {
+        //let label = e.target.parentElement.parentElement.parentElement.querySelector('label')
+        //label.innerText = e.target.innerText
+        //label.click()
+        let deliveryTypeLabel = document.getElementById('accordion-delivery-type-label')
+        if (['На месте', 'С собой'].includes(deliveryTypeLabel.innerText)) {
+            restraunt.style.display = ""
+            deliveryTime.querySelector('.delivery-time').innerText = 'Время самовывоза'
+            deliveryTime.style.display = ""
+            asap.style.display = ""
+            deliveryAddress.style.display = "none"
+            document.getElementById('pm_c_c').setAttribute('disabled', 'true')
+            document.getElementById('pm_c').removeAttribute('disabled')
+        } else {
+            if (!document.querySelector('#asap input').checked)
+                deliveryAddress.style.display = ""
+            restraunt.style.display = "none"
+            deliveryTime.querySelector('.delivery-time').innerText = 'Время доставки'
+            deliveryTime.style.display = ""
+            asap.style.display = ""
+            document.getElementById('pm_c_c').removeAttribute('disabled')
+            document.getElementById('pm_c').setAttribute('disabled', 'true')
+        }
+    }
+
+    function showModal(id) {
+        let modal = document.getElementById(id)
+        modal.classList.add('active')
+    }
+    function hideModal(id) {
+        let modal = document.getElementById(id)
+        modal.classList.remove('active')
+    }
+
+    function showModalAddress() {
+        let modal = document.getElementById('modal-address')
+        modal.classList.add('active')
+    }
+
+    function hideModalAddress() {
+        let modal = document.getElementById('modal-address')
+        modal.classList.remove('active')
+    }
+
+    function saveAddress() {
+        console.log(uid)
+        xhr = new XMLHttpRequest();
+        xhr.open("POST", "/saveAddress", true)
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        address = {
+            uid: uid,
+            address: document.getElementById('input-address').value
+        }
+        xhr.send(JSON.stringify(address))
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let modal = document.getElementById('modal-address')
+                let list = document.getElementById('addresses-list')
+                let li = document.createElement('li')
+                li.classList.add("menu-item")
+                document.getElementById('addr-txt').innerText = document.getElementById('input-address').value
+                delivery_address = xhr.responseText
+                li.innerText = document.getElementById('input-address').value
+                list.insertBefore(li, document.getElementById('add-address'))
+                li.addEventListener('click', chooseAccordeonItem)
+                document.getElementById('input-address').value = ''
+                modal.classList.remove('active')
+            }
+        }
+    }
+
+    function asapChange(e) {
+        if (e.target.checked) {
+            deliveryTime.style.display = "none"
+        } else {
+            deliveryTime.style.display = ""
+        }
+    }
+</script>
+{%endblock%}

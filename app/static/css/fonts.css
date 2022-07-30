@@ -1,0 +1,34 @@
+@font-face {
+  font-family: 'Helios Cond C';
+  src: url('../fonts/Helios Cond C/HeliosCond/HeliosCond.woff') format('woff'),
+	   url('../fonts/Helios Cond C/HeliosCond/HeliosCond.ttf') format('ttf'),
+	   url('../fonts/Helios Cond C/HeliosCond/HeliosCond.eot') format('eot');
+}
+
+@font-face {
+  font-family: '';
+  src: url('../fonts/Helios Cond C/HeliosCond/HeliosCond.woff') format('woff'),
+	   url('../fonts/Helios Cond C/HeliosCond/HeliosCond.ttf') format('ttf'),
+	   url('../fonts/Helios Cond C/HeliosCond/HeliosCond.eot') format('eot');
+}
+
+
+@font-face {
+	font-family: 'Etelka Pro';
+	font-style: normal;
+	font-weight: normal;
+	src: local('Etelka Pro'),
+		url('../fonts/Etelka/EtelkaPro-Light.woff') format('woff'),
+		url('../fonts/Etelka/EtelkaPro-Light.ttf') format('ttf'),
+		url('../fonts/Etelka/EtelkaPro-Light.eot') format('eot');
+}
+
+@font-face {
+	font-family: 'Etelka Pro';
+	font-style: normal;
+	font-weight: bold;
+	src: local('Etelka Pro'),
+		url('../fonts/Etelka/EtelkaPro-Medium.woff') format('woff'),
+		url('../fonts/Etelka/EtelkaPro-Medium.ttf') format('ttf'),
+		url('../fonts/Etelka/EtelkaPro-Medium.eot') format('eot');
+}

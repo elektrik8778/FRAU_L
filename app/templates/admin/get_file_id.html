@@ -1,0 +1,11 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div>
+        <h3>Получение файлайди</h3>
+        <form method="post" action="/admin/get_file_id", enctype="multipart/form-data">
+            <input type="file">
+            <input type="submit">
+        </form>
+    </div>
+{% endblock %}

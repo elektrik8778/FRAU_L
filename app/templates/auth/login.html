@@ -1,0 +1,49 @@
+{% extends 'auth/auth_base.html' %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <form class="form-signin" action="" method="post">
+                    <h3 class="mb-3 font-weight-normal white">Войти</h3>
+                    {{ form.hidden_tag() }}
+                    <p>
+                        {{ form.login(size=32, class='col-sm-12 form-control ', type="text", placeholder='Имя') }}<br>
+                        {% for error in form.login.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.password(size=32, class='col-sm-12 form-control', type="password", placeholder='Пароль') }}<br>
+                        {% for error in form.password.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class="list-unstyled white-text text-center">
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% endwith %}
+                    <p class="white">
+                        {{ form.remember_me() }} {{ form.remember_me.label }} <br>
+                    </p>
+                    <div class="justify-content-center">
+                        {{ form.submit(class="btn btn-outline-success") }}
+            {#            <a class="btn btn btn-outline-primary" href="{{ url_for('auth.register') }}">#}
+            {#                ЗАРЕГИСТРИРОВАТЬСЯ#}
+            {#            </a>#}
+            {#            <img src="{{ url_for('static', filename='images/logo_additional.png') }}" class="ml-auto mr-auto mt-3" style="display: block">#}
+            {#            <p class="white mt-3">#}
+            {#                Забыли пароль?#}
+            {#                <a href="{{ url_for('auth.reset_password_request') }}">Нажмите, чтобы восстановить</a>#}
+            {#            </p>#}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

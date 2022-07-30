@@ -1,0 +1,9 @@
+hr {
+  border: 0;
+  height: 1px;
+  background: gray;
+  background-image: -webkit-linear-gradient(left, #fff, gray, #fff);
+  background-image: -moz-linear-gradient(left, #fff, gray, #fff);
+  background-image: -ms-linear-gradient(left, #fff, gray, #fff);
+  background-image: -o-linear-gradient(left, #fff, gray, #fff);
+}

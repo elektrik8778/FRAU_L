@@ -1,0 +1,120 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>{{ title }}</h3>
+        <hr>
+        <div class="row">
+            <section class="col-8">
+                <h4>Данные экскурсии</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col">
+                            {{ form.save(class='btn btn-outline-success') }}
+                            <a class="btn btn-outline-secondary" href="{{ url_for('admin.trips') }}">Закрыть</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <b>{{ form.name.label }}</b>
+                            {{ form.name(class='form-control', value=trip.name) }}
+
+                            <b>{{ form.status.label }}</b>
+                            {{ form.status(class='form-check') }}
+
+                            <b>{{ form.price.label }}</b>
+                            {{ form.price(class='form-control', value=trip.price or 999) }}
+                        </div>
+                        <div class="col">
+                            <b>{{ form.description.label }}</b>
+                            {{ form.description(class='form-control', rows=6) }}
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <b>{{ form.media.label }}</b>
+                            {{ form.media(class='form-control') }}
+                        </div>
+                        <div class="col-12">
+                            <div class="row mt-1 align-items-center">
+                                {% for m in media %}
+                                    <div class="col">
+                                        <div class="media-wrapper position-relative">
+                                            {% if 'image' in m["file_type"] %}
+                                                <img width="150" class="img-fluid" src="{{ url_for('static', filename='uploads/trips/'+trip.id|string+'/'+m["filename"]) }}">
+                                            {% else %}
+                                                <video preload="metadata" class="border" controls width="100" src="{{ url_for('static', filename='uploads/trips/'+trip.id|string+'/'+m["filename"]) }}"></video>
+                                            {% endif %}
+                                            <a style="position: absolute; top: 0; left: 0; cursor: pointer" class="badge bg-danger" href="{{ url_for('admin.del_media', source='trip', source_id=trip.id, filename=m["filename"]) }}">Х</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-4">
+                            <b>{{ form.payment_invite.label }}</b>
+                            {{ form.payment_invite(class='form-control', rows=15) }}
+                        </div>
+                        <div class="col-4">
+                            <b>{{ form.success_payment_text.label }}</b>
+                            {{ form.success_payment_text(class='form-control', rows=15) }}
+                        </div>
+                        <div class="col-4">
+                            <b>{{ form.final_text.label }}</b>
+                            {{ form.final_text(class='form-control', rows=15) }}
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <section class="col-4" style="border-left: 1px solid grey">
+                <h4>Точки экскурсии</h4>
+                <a class="btn btn-outline-secondary" href="{{ url_for('admin.add_trip_point', tid=trip.id) }}">+</a>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Порядок в экскурсии</th>
+                        <th>Название</th>
+                        <th>Активна</th>
+                        <th>Операции</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for tp in points %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+{#                                {{ tp.order }}#}
+                                {% if trip.get_all_points()|length > tp.order > 1 %}
+                                    <a class="btn btn-outline-primary" href="{{ url_for('admin.ch_tp_order', tid=trip.id, tpid=tp.id, updown='up') }}">↑</a>
+                                    <a class="btn btn-outline-primary" href="{{ url_for('admin.ch_tp_order', tid=trip.id, tpid=tp.id, updown='down') }}">↓</a>
+                                {% elif tp.order == 1 %}
+                                    <a class="btn btn-outline-primary" href="{{ url_for('admin.ch_tp_order', tid=trip.id, tpid=tp.id, updown='down') }}">↓</a>
+                                {% elif trip.get_all_points()|length == tp.order %}
+                                    <a class="btn btn-outline-primary" href="{{ url_for('admin.ch_tp_order', tid=trip.id, tpid=tp.id, updown='up') }}">↑</a>
+                                {% endif %}
+                            </td>
+                            <td><a href="{{ url_for('admin.trip_point_detailed', tpid=tp.id) }}">{{ tp.name }}</a></td>
+                            <td>
+                                {% if tp.status %}
+                                    <span class="badge bg-success">Активно</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Неактивно</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a class="btn btn-outline-danger" href="{{ url_for('admin.del_trip_point', tpid=tp.id) }}">Удалить</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+{% endblock %}

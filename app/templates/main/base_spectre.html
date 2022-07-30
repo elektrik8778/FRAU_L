@@ -1,0 +1,27 @@
+<html>
+
+<head>
+    <title>Админка</title>
+    {% block preimports %}{% endblock preimports %}
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-icons.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+        body {
+            background-color: #fff;
+        }
+    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {% block scripts_pre %}{%  endblock %}
+    {% block style %}{% endblock style %}
+    {% block imports %}{% endblock imports %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    {% block scripts_after %}{% endblock %}
+</body>
+</html>

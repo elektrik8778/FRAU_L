@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div>
+        <h3>Модерация групп</h3>
+        <a class="btn btn-info" data-toggle="modal" data-target="#createModerator">Добавить модератора</a>
+        <a class="btn btn-info" data-toggle="modal" data-target="#createRegion">Добавить группу</a>
+        <ul class="list-unstyled">
+            {% for group in groups %}
+                <li class="mb-4">
+                    <b>{{ group.name + ':' }}</b>
+                    <p class="mb-0"> Время группы: {{ current_time[group.name].strftime('%d.%m.%Y %H:%M:%S') }}</p>
+                    <p class="mb-0">Количество пользователей в группе {{ group.users|count }}</p>
+                    <a href="{{ url_for('admin.del_group', group_id=group.id) }}">Удалить группу</a>
+                    <ul class="list-unstyled mt-3">
+                        {% for moderator in group.moderators %}
+                            <li>
+                                {{ moderator.first_name }} (id: {{ moderator.id }}, tg_id: {{ moderator.tg_id }})
+                                <a href="{{ url_for('admin.del_moderator', group_id=group.id, user_id=moderator.id) }}">удалить</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% include 'admin/__modal_create_group.html' %}
+    {% include 'admin/__modal_create_moderator.html' %}
+{% endblock %}

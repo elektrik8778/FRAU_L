@@ -1,0 +1,40 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>Промокоды мероприятия</h3>
+        <div class="row">
+            <table class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Номерок</th>
+                    <th>Пользователь</th>
+                    <th>Причина получения</th>
+                    <th>Дата получения</th>
+                    <th>Выпал в розыгрыше</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for n in numbers %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ n.id }}</td>
+                        <td>
+                            {% set user = n.get_user() %}
+                            <a href="/admin/user/{{ user.id }}">{{ user.first_name }}</a>
+                        </td>
+                        <td>{{ n.reason }}</td>
+                        <td>{{ n.res_date.strftime('%d.%m.%y %H:%M:%S') }}</td>
+                        <td>{{ n.was_drawn|string }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

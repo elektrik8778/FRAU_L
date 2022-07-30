@@ -1,0 +1,66 @@
+{% extends './admin/base_admin.html' %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+    {% if not poem.finished %}
+        <main class="container p-3">
+            <div id="poem" class="row">
+                <div class="col-12 poem-start text-center">
+                    {% for line in poem.text.split('\n') %}
+                        <p>{{ line }}</p>
+                    {% endfor %}
+                </div>
+                <div class="col-12 poem-parts">
+                    {% for pp in poem.get_parts() %}
+                        <hr>
+                        <div class="row">
+                            <div class="col-2">
+                                {% if pp.get_user()['photo'] %}
+                                    <img class="mb-0 rounded-circle" width="50" src="{{ pp.get_user()['photo'] }}">
+                                {% endif %}
+                                <p class="mt-0 mb-0" style="font-size: 10px;">{{ pp.get_user()['user'].first_name }}</p>
+                                {% if pp.user == user.id %}
+                                    <p class="mt-0" style="font-size: 10px;"><b>(ты)</b></p>
+                                {% endif %}
+                            </div>
+                            <div class="col-8">
+                                {% for line in pp.text.split('\n') %}
+                                    <p class="text-center">{{ line }}</p>
+                                {% endfor %}
+                            </div>
+                            <div class="col-2">
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if not poem_part.finished %}
+                    <div class="col-12 mt-5">
+                        <form method="post" enctype="multipart/form-data">
+                            {{ form.hidden_tag() }}
+
+                            {{ form.poem_text.label }}
+                            {{ form.poem_text(class='form-control', rows='4') }}
+                            {% for error in form.poem_text.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                            {% endfor %}<br>
+
+                            {{ form.send(class='btn btn-outline-success mt-1') }}
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    {% else %}
+        <main class="container p-3">
+            <h1 class="text-center">Стих, который вы тоже писали:</h1>
+            <div>
+                poem
+            </div>
+            <div class="text-center mt-5">
+                <a class="btn" href="https://t.me/{{ bot }}">Вернуться в бот</a>
+            </div>
+        </main>
+    {% endif %}
+{% endblock %}

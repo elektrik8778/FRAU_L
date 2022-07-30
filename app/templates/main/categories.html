@@ -1,0 +1,38 @@
+{% extends 'main/base_spectre.j2' %}
+
+{% block content %}
+    <section class="container">
+        {%for fc in fcs %}
+            <a href="{{ url_for('main.index', fcid=fc.id) }}" style="text-decoration:none; color: grey">
+            <div class="columns">
+                <div class="column col-4 flex-centered">
+                    <img
+                            loading="lazy"
+                            src="{{ url_for('static', filename='images/add_photo-512.png') if not fc.cat_picture else url_for('static', filename='uploads/'+fc.cat_picture) }}"
+                            class="img-responsive"
+                            style="border-radius: 10px; width: 90%;"
+                    >
+                </div>
+                <div class="col-7 flex-centered">
+                    <div class="text-left" style="width: 100%">
+                        <span>{{ fc.cat_name }}</span>
+                    </div>
+                </div>
+                <div class="column col-1 flex-centered">
+                    <span><i class="icon icon-arrow-right"></i></span>
+                </div>
+            </div>
+            </a>
+            <hr>
+        {%endfor%}
+    </section>
+    <section class="container">
+        {% include 'main/new_cart.html' %}
+    </section>
+{% endblock %}
+
+{% block scripts_after %}
+<script>
+  sh(localStorage.uid)
+</script>
+{% endblock %}

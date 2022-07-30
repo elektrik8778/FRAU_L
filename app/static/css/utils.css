@@ -1,0 +1,26 @@
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.bordered {
+    border: 1px solid #000;
+    object-fit: cover;
+
+}
+
+.main-pic {
+    min-height: 20rem !important;
+    min-width: 20rem !important;
+}
+
+.tint:hover {
+    filter: grayscale(50%);
+    filter: brightness(20%);
+    background-color: #000000a0;
+}

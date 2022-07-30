@@ -1,0 +1,144 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>{{ title }}</h3>
+        <hr>
+        <div class="row">
+            <section class="col">
+                <h4>Данные точки</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col">
+                            {{ form.save(class='btn btn-outline-success') }}
+                            <a class="btn btn-outline-secondary" href="{{ url_for('admin.trip', tid=trip_point.trip) }}">Закрыть</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            {{ form.order.label }}
+                            {{ form.order(class='form-control', value=trip_point.order, min=1) }}
+
+                            {{ form.name.label }}
+                            {{ form.name(class='form-control', value=trip_point.name) }}
+
+                            {{ form.status.label }}
+                            {{ form.status(class='form-check') }}
+
+                            {{ form.location.label }}
+                            {{ form.location(class='form-control') }}
+                        </div>
+                        <div class="col">
+                            {{ form.description.label }}
+                            {{ form.description(class='form-control', rows=10) }}
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            {{ form.meet_point_pic.label }}
+                            {{ form.meet_point_pic(class='form-control') }}
+
+                            {{ form.media.label }}
+                            {{ form.media(class='form-control') }}
+
+                            {{ form.voice.label }}
+                            {{ form.voice(class='form-control') }}
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <section class="col" style="border-left: 1px solid grey">
+                <h4>Медиа точки</h4>
+                <div class="row">
+                    <div class="col-6">
+                        <h5>Фото места встречи</h5>
+                        <div class="row mt-1 align-items-center">
+                            {% for m in media['meet_point'] %}
+                                <div class="col-4">
+                                    <div class="media-wrapper position-relative">
+                                        {% if 'image' in m["file_type"] %}
+                                            <img width="300" class="img-fluid" src="{{ url_for('static', filename='uploads/trips/'+trip_point.trip|string+'/'+trip_point.id|string+'/meet_point/'+m["filename"]) }}">
+                                        {% else %}
+                                            <video preload="metadata" class="border" controls width="100" src="{{ url_for('static', filename='uploads/trips/'+trip_point.trip|string+'/meet_point/'+trip_point.id|string+'/'+m["filename"]) }}"></video>
+                                        {% endif %}
+                                        <a style="position: absolute; top: 0; left: 0; cursor: pointer" class="badge bg-danger" href="{{ url_for('admin.del_media', source='meet_point', source_id=trip_point.trip|string+'_'+trip_point.id|string, filename=m["filename"]) }}">Х</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5>Голос</h5>
+                        <div class="col-12">
+                            <div class="row mt-1 align-items-center">
+                                {% for m in media['voice'] %}
+                                    <div class="col-12">
+                                        <div class="media-wrapper position-relative">
+                                            <audio style="width: 95%" preload="metadata" controls src="{{ url_for('static', filename='uploads/trips/'+trip_point.trip|string+'/'+trip_point.id|string+'/voice/'+m["filename"]) }}"></audio>
+                                            <a style="position: absolute; top: 0; right: 0; cursor: pointer" class="badge bg-danger" href="{{ url_for('admin.del_media', source='voice', source_id=trip_point.trip|string+'_'+trip_point.id|string, filename=m["filename"]) }}">Х</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h5>Фото с подписью</h5>
+                    <div class="col-12">
+                         <table class="table table-hover">
+                             <thead>
+                             <tr>
+                                 <th>#</th>
+                                 <th>Медиа</th>
+                                 <th>Комментарий/file id</th>
+                                 <th>Операции</th>
+                             </tr>
+                             </thead>
+                             <tbody>
+                             {% for m in media['media'] %}
+                                 <tr>
+                                     <td>{{ loop.index }}</td>
+                                     <td>
+                                         {% if 'image' in m["file_type"] %}
+                                            <img width="150" class="img-fluid" src="{{ url_for('static', filename='uploads/trips/'+trip_point.trip|string+'/'+trip_point.id|string+'/'+m["filename"]) }}">
+                                         {% else %}
+                                             <video preload="metadata" class="border" controls width="100" src="{{ url_for('static', filename='uploads/trips/'+trip_point.trip|string+'/'+trip_point.id|string+'/'+m["filename"]) }}"></video>
+                                         {% endif %}
+                                     </td>
+                                     <td>
+                                         <form method="post" enctype="multipart/form-data">
+                                             <p>Комментарий</p>
+                                            {{ ch_descr.hidden_tag() }}
+
+                                            {{ ch_descr.filename(value=m['filename'], hidden='hidden') }}
+
+                                            {{ ch_descr.description(class='form-control', value=m['description']) }}
+                                            {{ ch_descr.save(class='btn btn-link') }}
+                                         </form>
+                                         <form method="post" enctype="multipart/form-data">
+                                             <p>file id</p>
+                                             {{ fid_form.hidden_tag() }}
+
+                                             {{ fid_form.filename(value=m['filename'], hidden='hidden') }}
+                                             {{ fid_form.filetype(value=m['file_type'], hidden='hidden') }}
+
+                                            {{ fid_form.file_id(class='form-control', readonly='readonly', value=m['file_id']) }}
+                                            {{ fid_form.get_id(class='btn btn-link') }}
+                                         </form>
+                                     </td>
+                                     <td>
+                                         <a class="badge bg-danger" href="{{ url_for('admin.del_media', source='trip_point', source_id=trip_point.trip|string+'_'+trip_point.id|string, filename=m["filename"]) }}">Х</a>
+                                     </td>
+                                 </tr>
+                             {% endfor %}
+                             </tbody>
+                         </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock %}

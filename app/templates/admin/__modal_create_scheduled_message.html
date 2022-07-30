@@ -1,0 +1,52 @@
+<div class="modal fade" id="createScheduledMessage" tabindex="-1" role="dialog" aria-labelledby="chatInfoModalCenter" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Создать</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="container col-sm-10 form-signin" action="" method="post" style="padding: 2%" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+
+                    {{ form.message_type.label }}
+                    {{ form.message_type(class='col-sm-12 form-control') }}<br>
+                    {% for error in form.message_type.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {{ form.date_time.label }}
+                    {{ form.date_time(class='col-sm-12 form-control', placeholder='2020-12-31 00:00:00', id='send-time', type='datetime') }}<br>
+                    {% for error in form.date_time.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {{ form.text.label }}
+                    {{ form.text(class='col-sm-12 form-control', rows='10') }}<br>
+                    {% for error in form.text.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {{ form.content_link.label }}
+                    {{ form.content_link(class='form-control') }}<br>
+                    {% for error in form.content_link.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {{ form.group.label }}
+                    {{ form.group(class='form-control')  }}
+                    {% for error in form.group.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+
+                    {{ form.submit(class="btn btn-lg btn-primary mt-3") }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

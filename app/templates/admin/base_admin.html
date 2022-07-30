@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {{ bootstrap.load_css('5.1.1') }}
+{#    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>#}
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.20.0/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    {{ bootstrap.load_js(with_popper=False) }}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css">
+    <link rel="icon" href="{{ url_for("static", filename="images/favicon.png") }}">
+    <link href="{{ url_for("static", filename="css/admin_styles.css") }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for("static", filename="css/fonts.css") }}" rel="stylesheet" type="text/css">
+    <script href="{{ url_for('static', filename='js/jquery.maskedinput.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha384-qlmct0AOBiA2VPZkMY3+2WqkHtIQ9lSdAsAn5RUJD/3vA5MKDgSGcdmIv4ycVxyn" crossorigin="anonymous"></script>
+
+    {% if title %}
+        <title>{{ title }}</title>
+    {% else %}
+        <title>Админка</title>
+    {% endif %}
+</head>
+<body>
+
+{% block navbar %}
+    {% include 'admin/__admin_navbar.html' %}
+    {% include 'admin/__flashed_messages.html' %}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+    <script src="https://bitstorm.org/jquery/color-animation/jquery.animate-colors-min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.20.0/dist/bootstrap-table.min.js"></script>
+{% endblock %}
+</body>
+</html>

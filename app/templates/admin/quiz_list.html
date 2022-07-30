@@ -1,0 +1,19 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div>
+        <h3>Список викторин</h3>
+        <a class="btn btn-outline-success mb-5" href="{{ url_for('admin.create_quiz', quiz_id='new') }}">Создать новую</a>
+        <ol>
+            {% for quiz in quizes %}
+                <li class="mb-3">
+                    <a class="btn btn-outline-success" href="{{ url_for('admin.create_quiz', quiz_id=quiz.id) }}">{{ quiz.name }}</a>
+                    {% if quiz.command %}
+                        <span>Команда для запуска: <b>/test {{ quiz.command }}</b></span>
+                    {% endif %}
+                    <a href="{{ url_for('admin.del_quiz', quiz_id=quiz.id) }}">Удалить</a>
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'auth/auth_base.html' %}
+{% block content %}
+    <style>
+        body{
+            background: url("{{ url_for('static', filename='images/pattern_v2_cmyk.png') }}");
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-size: contain;
+            font-family: "Raleway";
+            {#height: 80vh;#}
+        }
+        .btn.btn-nespresso {
+            background: #006838;
+            color: white;
+        }
+        .btn.btn-nespresso:hover {
+            background: white;
+            color: rgb(0, 121, 194);
+        }
+        form {
+            background-color: rgba(0, 0, 0, .2);
+            border-radius: 5px;
+        }
+        .personal-data-link {
+            font-family: "Raleway";
+            color: #ebd7be;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+        .personal-data-link:hover {
+            color: #ebd7be;
+            text-decoration-style: dotted;
+        }
+        .modal-content {
+            background: #735038;
+            color: white;
+        }
+        .modal-body {
+            font-family: "Raleway";
+            font-size: small;
+        }
+    </style>
+    <main class="container-fluid text-light">
+{#        <div class="row align-items-center">#}
+{#            <div class="col text-center">#}
+{#                <img width="150" src="/static/images/logoDMR.png">#}
+{#            </div>#}
+{#            <div class="col text-center">#}
+{#                <img width="150" src="/static/images/logoDMG.png">#}
+{#            </div>#}
+{#        </div>#}
+        <div class="row">
+            <div class="col">
+                <form class="form-signin text-center p-3 mt-3" style="" method="post">
+                    {{ form.hidden_tag() }}
+                    <h3>ВАШИ ДАННЫЕ</h3>
+
+                    {{ form.first_name.label(class='mb-0 mt-1') }}
+                    {{ form.first_name(size=32, class='form-control', type='text', value=user.first_name if user.first_name else '') }}
+                    {% for error in form.first_name.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+
+{#                    {{ form.email.label(class='mb-0 mt-1') }}#}
+{#                    {{ form.email(size=32, class='form-control', type='text', value=user.email if user.email else '') }}#}
+{#                    {% for error in form.email.errors %}#}
+{#                        <span style="color: red;">[{{ error }}]</span>#}
+{#                    {% endfor %}<br>#}
+{##}
+{#                    {{ form.phone.label(class='mb-0 mt-1') }}#}
+{#                    {{ form.phone(size=32, class='form-control', type='text', value=user.phone if user.phone else '') }}#}
+{#                    {% for error in form.phone.errors %}#}
+{#                        <span style="color: red;">[{{ error }}]</span>#}
+{#                    {% endfor %}<br>#}
+
+                    {{ form.group.label(class='mb-0 mt-1') }}
+                    {% if user.group %}
+                        {{ form.group(class='form-control group-select') }}
+                        <script>
+                            $('option[value={{ user.group }}]').prop('selected', true)
+                            {#$('.group-select').attr('disabled', 'disabled')#}
+                        </script>
+                    {% else %}
+                        {{ form.group(class='form-control') }}
+                    {% endif %}
+                    {% for error in form.group.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}<br>
+
+                    {% if not user.group %}
+                        <input type="number" name="new_user_flag" hidden value="1">
+                    {% endif %}
+
+        {#                {{ form.pesonal_data(size=64, class='mb-0 mt-4') }}#}
+        {#                <a class="personal-data-link" href="#" data-toggle="modal" data-target="#PersonalDataModal">Согласен на обработку персональных данных</a><br>#}
+        {#                {{ form.pesonal_data.label(class='mb-0 mt-4') }}#}
+                    {{ form.tg_id(size=32, type='number', readonly='True', hidden='hidden') }}
+                    {{ form.submit(class="btn btn-nespresso", value='Сохранить') }}
+                    <p><a class="btn btn-secondary mt-3" href="https://t.me/{{ bot_name }}">Вернуться в бот</a></p>
+                </form>
+            </div>
+        </div>
+
+{#        <div class="text-center">#}
+{#            <img width="200" src="/static/images/another_vibe.png">#}
+{#        </div>#}
+        <!-- Модальное окно -->
+    <div class="modal fade" id="PersonalDataModal" tabindex="-1" aria-labelledby="PersonalDataModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="PersonalDataModalLabel">СОГЛАСИЕ на обработку персональных данных / CONSENT to Personal Data Processing</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+{#                    <div class="row">#}
+{#                        <div class="col">#}
+{#                            <p></p>#}
+{#                        </div>#}
+{#                    </div>#}
+                    <div class="row">
+                        <div class="col">
+                            <p style="text-align: justify">
+                                Я свободно, своей волей и в своем интересе, в соответствии со статьей 9 Федерального
+                                закона от 27 июля 2006 года № 152-ФЗ «О персональных данных», предоставляю конкретное,
+                                информированное и сознательное согласие Опера-тору, являющемуся моим Работодателем, на
+                                передачу моих персональных данных (далее – «ПДн») на указанных ниже условиях компании
+                                ООО «АРС КОМЬЮНИКЕЙШНС», г. Москва ул. Россолимо, д. 17, стр. 1 с целью организации и
+                                проведения мероприятия для работников Департамента Неспрессо. Мои персональные данные,
+                                в отношении которых дается настоящее согласие, включают: фамилию, имя, отчество (при
+                                наличии); отдел; номер мобильного телефона.
+                            </p>
+                            <p style="text-align: justify">
+                                Срок действия согласия: С 26 апреля 2021 г. по 29 апреля 2021 г. Согласие на обработку
+                                предоставляется в отношении следующих действий с ПДн, осуществляемых с использованием
+                                автоматизированной обработки, неавтоматизированной обработки (без использования средств
+                                автоматизации) и смешанного способа обработки ПДн: доступ персонала Исполнителя.
+                                Настоящее согласие может быть отозвано путем направления в адрес ООО «Нестле Россия»
+                                сообщения об отзыве согласия на обработку ПДн в произвольной письменной форме не менее
+                                чем за 30 (тридцать) дней до предполагаемой даты отзыва настоящего согласия почтой
+                                (с уведомлением о вручении) на имя Работодателя или вручения непосредственно
+                                уполномоченному Работодателем лицу. Текст согласия на английском языке идентичен тексту
+                                согласия на русском языке.
+                            </p>
+                        </div>
+                        <div class="col">
+                            <p style="text-align: justify">
+                                According to the requirements of the art. 9 of the Federal law dated 27.07.2006 On
+                                personal data № 152- FZ I hereby give my specified, well-informed and in full awareness
+                                consent to the Operator that is my Employer freely, by my own will and in my own
+                                interest for transferring of my personal data (hereinafter referred to as "PD"), on the
+                                following conditions to LLC ARS COMMUNICATIONCS, Moscow, Rossolimo Street, 17, bld. 1
+                                in order to organize and conduct the event for the employees of the Nespresso
+                                department. My personal data, in respect of which this consent is given, includes: last
+                                name, first name, patronymic (if applicable); department; mobile phone number.
+                            </p>
+                            <p style="text-align: justify">
+                                The validity of the consent: From 2021 April 21 till 2021 April 29. Consent to the
+                                processing is provided in respect of the following actions with the Employee's PD
+                                carried out using automated processing, manual pro-cessing (without the use of
+                                automation) and a mixed method of processing personal data, including by scanning and
+                                storing electronic copies of docu-ments: access of the personnel of the Contractor. This
+                                consent can be withdrawn by sending to the address of "Nestle Russia" LLC notice of
+                                withdrawal of the Consent to the processing of personal data in writing, not less than
+                                thirty (30) days before the expected date of Consent withdrawal  by mail (with notice of
+                                receipt) to the Employer or delivery directly to a person authorized by the Employer.
+                                The text of the consent in English is identical to the text of the consent in Russian.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-nespresso" data-dismiss="modal">ЗАКРЫТЬ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+{% endblock %}

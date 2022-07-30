@@ -1,0 +1,97 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <main class="container-fluid">
+        <h3>Голосования</h3>
+        <div class="row">
+            <div class="сol-sm-6">
+                <form enctype="multipart/form-data" method="post">
+                    {{ form.hidden_tag() }}
+                    {% if vid %}
+                        <h5>Редактировать голосование #{{ vid }}</h5>
+                        <p><a href="/admin/votings">Отмена</a></p>
+                    {% else %}
+                        <h5>Создать голосование</h5>
+                    {% endif %}
+
+                    {{ form.name.label }}
+                    {{ form.name(class='form-control') }}
+
+                    {{ form.description.label }}
+                    {{ form.description(class='form-control') }}
+
+                    {{ form.active.label }}
+                    {{ form.active(class='form-control') }}
+
+                    {{ form.save() }}
+                </form>
+            </div>
+        </div>
+
+        <h5>Список голосований</h5>
+        <ul class="row">
+            {% for v in votings %}
+                <li class="col border">
+                    <h5>{{ v.id }}. {{ v.name }}</h5>
+                    <p>Голосов: {{ v.get_all_votes() | length }}</p>
+                    {% if v.description %}
+                        <p>{{ v.description }}</p>
+                    {% endif %}
+                    {% if v.active %}
+                        <p class="badge badge-success">Активно</p>
+                    {% else %}
+                        <p class="badge badge-primary">Не активно</p>
+                    {% endif %}
+                    <a class="btn btn-outline-primary" href='/admin/votings?vid={{ v.id }}'>Редактировать</a>
+                    <a class="btn btn-outline-danger" href="{{ url_for('admin.del_voting', vid = v.id) }}">Удалить</a>
+
+                    {% if vi != v.id | string %}
+                        <a class="btn btn-outline-primary" href='/admin/votings?createvi={{ v.id }}'>Добавить пункт</a>
+                    {% else %}
+                        <a class="btn btn-outline-primary" href='/admin/votings'>Отмена</a>
+                    {% endif %}
+
+                    <ul>
+                        {% for i in v.get_items() %}
+                            <li>
+                                {% if i.pic %}
+                                    <img width="100" src="{{ url_for('static', filename='images/votings/'+v.id|string+'/'+i.id|string+'/'+i.pic) }}">
+                                {% endif %}
+                                {{ i.name }}
+                                {% if v.get_all_votes()|length != 0 %}
+                                    <span>(Голосов: {{ i.get_all_votes() | length }},  {{ (i.get_all_votes()|length/v.get_all_votes()|length*100) | round(100) }}%)</span>
+                                {% else %}
+                                    <span>(Голосов: 0,  0%)</span>
+                                {% endif %}
+                                <a href="{{ url_for('admin.del_vi', viid=i.id) }}">Удалить</a>
+
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if vi == v.id | string %}
+                        <form enctype="multipart/form-data" method="post">
+                            {{ vi_form.hidden_tag() }}
+
+                            <input type="number" name="vid" value="{{ v.id }}" hidden>
+
+                            {{ vi_form.name.label }}
+                            {{ vi_form.name(class='form-control') }}
+
+                            {{ vi_form.description.label }}
+                            {{ vi_form.description(class='form-control') }}
+
+                            <p class="mt-1">
+                                {{ vi_form.pic.label }}
+                                {{ vi_form.pic(class='') }}
+                            </p>
+
+                            <p>{{ vi_form.add(class='btn btn-outline-success mt-3') }}</p>
+                        </form>
+                    {% endif %}
+
+                </li>
+            {% endfor %}
+        </ul>
+    </main>
+{% endblock %}

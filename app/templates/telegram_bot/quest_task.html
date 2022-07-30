@@ -1,0 +1,119 @@
+{% extends './admin/base_admin.html' %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            background: #004d9e;
+        }
+        #player {
+            border: 10px solid #52b0e4;
+            border-radius: 15px;
+        }
+        h1 {
+            font-family: 'Etelka Pro', serif;
+            font-weight: bold;
+            color: white;
+            font-size: 24px;
+        }
+        p {
+            font-family: 'Etelka Pro', serif;
+            font-size: 16px;
+            color: white;
+        }
+        .btn {
+            background: none;
+            border: 1px dotted grey;
+            border-radius: 15px;
+            {#box-shadow: 10px 5px 5px #52b0e4;#}
+            color: white;
+        }
+        #answer {
+            border-radius: 15px;
+        }
+    </style>
+    {% if not quest_finished %}
+        <main class="container p-3">
+            <h1 class="text-center">Задание {{ current_quest_task.order }} из {{ quest_tasks|length }}</h1>
+            <p class="text-center">"{{ current_quest_task.name }}"</p>
+            <div class="row mt-4">
+                <div class="col text-center">
+                    <iframe id="player" src="https://www.youtube.com/embed/{{ current_quest_task.media }}" title="Задание #{{ current_quest_task.order }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <p class="mb-5">{{ current_quest_task.description }}</p>
+                    <div class="row mb-5">
+                        {% if uqt.used_hints < current_quest_task.hints|length %}
+                            <div class="col-12">
+                                <a class="btn hint" data-uqt="{{ uqt.id }}" data-hint="{{ uqt.used_hints + 1 }}">Подсказка #{{ uqt.used_hints + 1 }}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-12 hints">
+                            {% for i in range(uqt.used_hints) %}
+                                <p><span style="font-weight: bold">Подсказка</span> #{{ i + 1 }}: {{ current_quest_task.hints[i] }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <form method="post" enctype="multipart/form-data">
+                        {{ check_answer_form.hidden_tag() }}
+                        {{ check_answer_form.task(value=current_quest_task.id, hidden="hidden") }}
+                        {{ check_answer_form.user(value=user.id, hidden="hidden") }}
+
+    {#                    {{ check_answer_form.answer.label }}#}
+                        <p class="mb-0">Формат ответа: {{ current_quest_task.answer_format }}</p>
+                        {{ check_answer_form.answer(id='answer', class='form-control') }}
+                        {% for m in get_flashed_messages() %}
+                            <p style="color: #e65734">{{ m }}</p>
+                        {% endfor %}
+
+                        {{ check_answer_form.submit(class='btn mt-3') }}
+                    </form>
+                </div>
+            </div>
+        </main>
+    {% else %}
+        <main class="container p-3">
+            <h1 class="text-center">Квест пройден! Поздравляем!</h1>
+            <div class="text-center mt-5">
+                <a class="btn" href="https://t.me/{{ bot }}">Вернуться в бот</a>
+            </div>
+        </main>
+    {% endif %}
+    <script>
+    $('.hint').click(getHint)
+
+    function getHint(e){
+        $.ajax({
+            url: '/get_hint',
+            method:'post',
+            data: JSON.stringify({
+                uqt: e.currentTarget.dataset.uqt,
+                hint: e.currentTarget.dataset.hint,
+            }),
+            success: (d)=>{
+                {#$(e.currentTarget).hide()#}
+                {% if current_quest_task %}
+                    let hintsCount = {{ current_quest_task.hints|length }}
+                {% endif %}
+                $('.hints').append(`
+                    <p><span style="font-weight: bold;">Подсказка</span> #${e.currentTarget.dataset.hint}: ${d}</p>
+                `)
+                if (parseInt(e.currentTarget.dataset.hint)<hintsCount) {
+                    $(e.currentTarget).attr('data-hint', parseInt(e.currentTarget.dataset.hint) + 1)
+                    $(e.currentTarget).text(`Подсказка #${parseInt(e.currentTarget.dataset.hint)}`)
+                } else {
+                    $(e.currentTarget).hide()
+                }
+
+
+            }
+        })
+    }
+    </script>
+{% endblock %}

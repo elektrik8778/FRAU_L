@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Алерты</title>
+    <style>
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Regular.otf') }}");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Bold.otf') }}");
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        body, * {
+            font-family: "RostelecomBasis";
+            box-sizing: border-box;
+            margin: 0;
+        }
+        section {
+            background: rgb(0, 255, 0);
+            {#height: 100vh;#}
+            padding-left: 1%;
+            padding-top: 1%;
+        }
+        #marq {
+            position: absolute;
+            right: 0;
+            {#top: 70%;#}
+            left: 50%;
+            {#bottom: 20%;#}
+            padding-top: 1%;
+            padding-bottom: 1%;
+            padding-left: 1%;
+            margin-bottom: auto;
+            margin-right: 1%;
+            color: white;
+            font-size: 1.8em;
+            border-radius: 15px;
+            background:rgba(255, 255, 255, 1);
+            display: table;
+            width: 47vw;
+        }
+
+        .chat-username {
+            font-family: "RostelecomBasis";
+            color: rgb(229, 38, 19);
+            font-weight: bold;
+            font-size: 1em;
+            {#margin: 0 0 0 2%;#}
+            {#padding: 0 0 0 3%;#}
+        }
+
+        .chat-pic {
+            font-family: "RostelecomBasis";
+            height: 10%;
+        }
+
+        .chat-text {
+            font-family: "RostelecomBasis";
+            margin: 0;
+            padding: 0;
+            line-height: 1em;
+            color: rgb(0, 103, 162);
+        }
+
+        .box {
+            justify-content: center;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+    <section>
+        <div class="back169" style="height: 100vh"></div>
+        <div id="marq"></div>
+    </section>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        var message
+        var m = document.querySelector('#marq')
+        {#var queue = document.querySelector('.queue')#}
+        var showing = false
+
+        function updateChat() {
+            let url = "{{ vidget_prefix }}"+'/update_chat'
+            {#let url = 'https://priznaniertdv2019.ru/update_chat';#}
+            data = {
+                request: 'alert'
+            }
+            params = {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }
+            if (showing === false) {
+                fetch(url, params)
+                .then(response => response.json())
+                .then(data => {
+                    for (let message of data['data']) {
+                        let name = message['user']
+                        let text = message['text']
+                        let link = message['link']
+                        message.name = name
+                        message.text = text
+                        message.link = link
+                        console.log(message)
+                        showing = true
+                        showMessage(message)
+                    }
+                })
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showMessage(message) {
+            m.innerText = ''
+            let username = document.createElement('p')
+            username.classList.add('chat-username')
+            {#username.classList.add('row')#}
+            username.innerText = `${message['user']}:`
+            let d = document.createElement('div')
+            d.classList.add('content-box')
+            d.classList.add('row')
+            let chat_mes = document.createElement('p')
+            chat_mes.classList.add('chat-text')
+            chat_mes.classList.add('col-sm-10')
+            chat_mes.classList.add('align-middle')
+            chat_mes.innerText = `${message['text']}`
+            m.appendChild(username)
+            m.appendChild(d)
+            if (message['link']) {
+                let chat_pic = document.createElement('img')
+                chat_pic.classList.add('chat-pic')
+                chat_pic.classList.add('col-sm-2')
+                chat_pic.classList.add('align-middle')
+                chat_pic.src = message['link']
+                chat_pic.alt = 'photo from user'
+                d.appendChild(chat_pic)
+            }
+            d.appendChild(chat_mes)
+            marq = $('#marq')
+            marq.fadeIn(1000)
+            let marq_top = section_node.height() - marq.height() - 30
+            marq.css('top', marq_top)
+            marq.css('font-size', section_node.height()/30)
+            sleep(6000)
+                .then(()=>{
+                    marq.fadeOut(500)
+                    sleep(2000)
+                    showing=false
+                })
+        }
+        setInterval(updateChat, 500);
+</script>
+    <script>
+        let section_node = $('.back169')
+        let section_width = section_node.width()
+        console.log(section_node.width()*9/16)
+        section_node.height(section_node.width()*9/16)
+    </script>
+</body>
+</html>

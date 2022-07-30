@@ -1,0 +1,161 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>Промокоды мероприятия</h3>
+        <div class="row">
+            <table id="tickets1" class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Код</th>
+                    <th>Регулярный</th>
+                    <th>Сообщение при успехе</th>
+                    <th>Сообщение при неуспехе</th>
+                    <th>Успешно введен (раз)</th>
+                    <th>Операции</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in tickets %}
+                    <tr id="ticket{{ t.id }}">
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <input class="input-group-text ticket" type="text" data-tid="{{ t.id }}" value="{{ t.code }}" style="width: 100%; text-align: left">
+                        </td>
+                        <td>
+                            <input class="ticket" type="checkbox" data-tid="{{ t.id }}" {% if t.regular == True %} checked {% endif %}>
+                        </td>
+                        <td>
+                            <textarea class="input-group-text ticket" type="text" data-tid="{{ t.id }}" style="width: 100%; text-align: left">{{ t.success_description }}</textarea>
+                        </td>
+                        <td>
+                            <textarea class="input-group-text ticket" type="text" data-tid="{{ t.id }}" style="width: 100%; text-align: left">{{ t.decline_description }}</textarea>
+                        </td>
+                        <td>{{ t.users }}</td>
+                        <td>
+                            <a class="btn btn-outline-danger" href="/admin/del_ticket/{{ t.id }}">Удалить</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h5>Создать новый</h5>
+                <form id="createTicket">
+                    <div class="mb-3">
+                        <label for="inputCode" class="form-label">Код</label>
+                        <input type="text" class="form-control" id="inputCode" aria-describedby="codeHelp" required>
+                        <div id="codeHelp" class="form-text">То, что должны будут ввести пользователи</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputSuccessMessage" class="form-label">Сообщение при успешном вводе</label>
+                        <input type="text" class="form-control" id="inputSuccessMessage" required>
+                        <div id="successMessageHelp" class="form-text">Сообщение придет в бот</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputDeclineMessage" class="form-label">Сообщение при повторном вводе</label>
+                        <input type="text" class="form-control" id="inputDeclineMessage" required>
+                        <div id="declineMessageHelp" class="form-text">Сообщение придет в бот</div>
+                    </div>
+                      <div class="mb-3 form-check">
+                          <input type="checkbox" class="form-check-input" id="regularTicket">
+                          <label class="form-check-label" for="regularTicket">Регулярный</label>
+                          <div id="regularTicketHelp" class="form-text">Поставьте галочку, если тикет надо проверять по  регулярному выражению</div>
+                      </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function () {
+            updateTable()
+        })
+
+        function updateTable(){
+            let table = $('#tickets').DataTable({
+                ajax: '/admin/get_tickets_data',
+                serverSide: true,
+                columns: [
+                    {data: 'num', orderable: false},
+                    {data: 'code', orderable: true},
+                    {data: 'regular', orderable: false},
+                    {data: 'success_description', orderable: true},
+                    {data: 'decline_description', orderable: false},
+                    {data: 'users', orderable: false},
+                ],
+                language: {
+                    search: "Искать в таблице",
+                    lengthMenu: "Показать _MENU_ тикетов",
+                    info: "Показаны с _START_ по _END_ из _TOTAL_ тикетов",
+                    infoEmpty: "Показаны с 0 по 0 из 0 тикетов",
+                    infoFiltered: "(отфильтровано из _MAX_ тикетов)",
+                    paginate: {
+                        first:      "Первая",
+                        previous:   "Предыдущая",
+                        next:       "Следующая",
+                        last:       "Последняя"
+                    },
+                }
+            });
+            table.on('draw', completeTable);
+        }
+
+        function completeTable(){}
+
+        $("#createTicket").submit((e)=>{
+            {#e.preventDefault()#}
+            {#console.log(e)#}
+            $.ajax({
+                url: '/admin/add_ticket',
+		        method: 'post',
+		        data: JSON.stringify({
+                    code: e.currentTarget[0].value,
+                    success_description: e.currentTarget[1].value,
+                    decline_description: e.currentTarget[2].value,
+                    regular: e.currentTarget[3].checked,
+                }),
+		        success: (data)=>{
+		        }
+	        });
+        })
+    </script>
+    <script>
+        $('.ticket').change(saveTicket)
+
+        function saveTicket(e) {
+            let  tid = $(e.currentTarget).data('tid')
+            let ticket = $(`#ticket${tid} td`)
+            let data = {
+                id: tid,
+                code: $(ticket[1].children[0]).val(),
+                regular: ticket[2].children[0].checked,
+                success_description: $(ticket[3].children[0]).val(),
+                decline_description: $(ticket[4].children[0]).val(),
+            }
+            $.ajax({
+                url: '/admin/edit_ticket',
+                method: 'post',
+                data: JSON.stringify(data),
+                success: (resp)=>{
+                    let old_color = ticket.css('background-color')
+                    ticket.animate({
+                        backgroundColor: 'lightgreen'
+                    }, 100, ()=>{
+                        ticket.animate({
+                            backgroundColor: old_color
+                        }, 100)
+                    })
+                }
+            })
+
+        }
+    </script>
+{% endblock %}

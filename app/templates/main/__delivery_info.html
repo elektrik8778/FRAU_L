@@ -1,0 +1,285 @@
+<div style="margin: 3%">
+    <div id="delivery-type" class="columns">
+        {#<div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип доставки</span></div>#}
+        <!-- mutually exclusive Accordions example (with same input names) -->
+        <div class="column col-7 text-right">
+            <input type="radio" name="delivery_type" id="dt-1" value="delivery" hidden>
+            <input type="radio" name="delivery_type" id="dt-2" value="at-place" hidden>
+            <input type="radio" name="delivery_type" id="dt-3" value="self-checkout" hidden>
+            <div class="accordion">
+                <input type="checkbox" id="accordion-delivery-type" name="accordion-checkbox" hidden>
+                <label id="accordion-delivery-type-label" class="accordion-header c-hand"
+                    for="accordion-delivery-type">
+                    <span>выбрать</span><i class="icon icon-arrow-right"></i>
+                </label>
+                <div class="accordion-body">
+                    <!-- Accordions content -->
+                    <ul class="menu menu-nav">
+                        <li class=" menu-item"><a
+                                onclick="document.getElementById('dt-1').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">Доставка</a>
+                        </li>
+                        <li class=" menu-item"><a
+                                onclick="document.getElementById('dt-2').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">На месте</a></li>
+                        <li class=" menu-item"><a
+                                onclick="document.getElementById('dt-3').click(); e=document.getElementById('accordion-delivery-type-label'); e.innerHTML=this.innerText;chooseAccordeonItem(this); e.click()">С собой</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="column col-12">
+            <hr>
+        </div>
+    </div>
+    <div id="delivery-address" class="columns">
+        <div class="column col-5"><i class="icon icon-location mr-2"></i><span>Адрес</span></div>
+        <!-- mutually exclusive Accordions example (with same input names) -->
+        <div id="user-addresses-ids" class="column col-7 text-right">
+{#            {% for a in g.u.get_addresses() %}#}
+{#            <input type="radio" id="addr-{{a.id}}" value="{{a.id}}" name='delivery_addr' hidden>#}
+{#            {% endfor %}#}
+            <div class="accordion">
+                {#<input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox" hidden>#}
+                <input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox">
+                <label id="accordion-delivery-address-label" class="accordion-header c-hand"
+                    for="accordion-delivery-address">
+                    <span id="addr-txt">выбрать</span><i class="icon icon-arrow-right"></i>
+                </label>
+                <div class="accordion-body">
+                    <!-- Accordions content -->
+                    <ul id="addresses-list" class="menu menu-nav">
+                        {# тут вставим список адресов пользователя #}
+                    </ul>
+                    <a id="add-address" class="btn mt-2">добавить адрес</a>
+                </div>
+            </div>
+        </div>
+        <div class="column col-12">
+            <form id="add-address-form" class="form-group" hidden enctype="multipart/form-data" onsubmit="saveAddress(); return false">
+                <hr>
+                <label class="form-label  mb-0" for="delivery-name">Название адреса</label>
+                <input class="form-input mt-0" type="text" id='delivery-name' placeholder='например, "Дом" или "Работа"' required>
+
+                <label class="form-label mb-0" for="delivery-city">Город</label>
+                <input class="form-input mt-0" type="text" id="delivery-city" value="Амурская область, Благовещенск" disabled>
+
+                <div class="columns">
+                    <div id="street-dropdown" class="dropdown dropdown-address column col-8">
+                        <label class="form-label  mb-0" for="delivery-street">Улица</label>
+                        <input class="form-input dropdown-input mt-0" type="text" id="delivery-street" placeholder="Пушкина" required>
+                        <ul id="street-list" class="menu" style="background-color: darkgrey">
+                            <li>1</li>
+                            <li>2</li>
+                        </ul>
+                    </div>
+                    <div id="house-dropdown" class="dropdown dropdown-address column col-4">
+                        <label class="form-label  mb-0" for="delivery-house">Дом</label>
+                        <input class="form-input dropdown-input mt-0" type="text" id="delivery-house" placeholder="1" required>
+                        <ul id="house-list" class="menu" style="background-color: darkgrey">
+                            <li>1</li>
+                            <li>2</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="columns">
+                    <div class="column col-4">
+                        <label class="form-label  mb-0" for="delivery-entrance">Подъезд</label>
+                        <input class="form-input mt-0" type="text" id="delivery-entrance" placeholder="1">
+                    </div>
+                    <div class="column col-4">
+                        <label class="form-label mb-0" for="delivery-floor">Этаж</label>
+                        <input class="form-input mt-0" type="text" id="delivery-floor" placeholder="1">
+                    </div>
+                    <div class="column col-4">
+                        <label class="form-label mb-0" for="delivery-flat">Квартира</label>
+                        <input class="form-input mt-0" type="text" id="delivery-flat" placeholder="1" required>
+                    </div>
+                </div>
+
+                <div class="columns">
+                    <div class="column col-8">
+                        <label class="form-label mb-0" for="delivery-comment">Комментарий</label>
+                        <input class="form-input mt-0" type="text" id="delivery-comment" placeholder="код домофона: 1799">
+                    </div>
+                    <div class="column col-4">
+                        <label class="form-label mb-0" for="save-addr" style="color: white">кнопка</label>
+                        <input id="save-addr" type="submit" class="btn btn-primary form-input input-group-btn" value="Сохранить">
+                    </div>
+                </div>
+                <hr>
+            </form>
+{#            <hr>#}
+        </div>
+        <div id="map" class="column col-12" style="width: 100%; height: 0; margin: 0; padding: 0;"></div>
+        <div class="column col-12 mb-2">
+            <p id="delivery-area" class="mb-1" style="font-size: 12px" hidden><b>Район</b></p>
+            <p id="delivery-cost" class="mb-1" style="font-size: 12px" hidden>Цена доставки до вашего адреса:</p>
+            <p id="delivery-free-min-cost" class="mb-1" style="font-size: 12px" hidden>Минимальная сумма заказа для бесплатной доставки:</p>
+            <p id="delivery-total-cost" class="mb-1" style="font-size: 12px" hidden>Цена доставки вашего заказа:</p>
+        </div>
+    </div>
+    <div id="restaurant" class="columns">
+        <div class="column col-5"><i class="icon icon-location mr-2"></i><span>Ресторан</span></div>
+        <div class="column col-7 text-right">
+            {% for i in g.restaraunts %}
+                <input type="radio" value="{{i.id}}" hidden name="rest-id" id="rest-{{i.id}}">
+            {%endfor%}
+            <div class="accordion">
+                <input type="checkbox" id="accordion-restaurant" name="accordion-checkbox" hidden>
+                <label class="accordion-header c-hand" for="accordion-restaurant">
+                    <span id="rest-addr">Выбрать</span></i>
+                </label>
+                <div class="accordion-body">
+                    <!-- Accordions content -->
+                    <ul class="menu menu-nav">
+                        {% for i in g.restaraunts %}
+                        <li class="menu-item"><a
+                                onclick="document.getElementById('rest-{{i.id}}').click(); document.getElementById('rest-addr').innerText=this.innerText; document.getElementById('accordion-restaurant').click()">{{i.addr}}</a>
+                        </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="column col-12">
+            <hr>
+        </div>
+    </div>
+    <div id="delivery-time" class="columns">
+        <div class="column col-6"><i class="icon icon-time mr-2"></i><span class="delivery-time">Время уборки</span></div>
+        <div class="column col-6 text-right">
+            {# <span>выбрать</span><i class="icon icon-arrow-right"></i> #}
+            <input id="delivery-time-picker" type="time" name="prepare_at" min="11:00" max="22:00" style="width: 50%">
+        </div>
+        <div class="column col-12">
+            <span id="delivery-time-validity"></span>
+            <style>
+                #delivery-time-validity {
+                    --del-text: 'Выберите время между 11:00 и 22:00 или активируйте ползунок "Как можно скорее" ниже';
+                }
+                input:invalid {
+                    color: red;
+                }
+                #delivery-time:has(input:invalid) #delivery-time-validity:after {
+                    {#content: var(--del-text);#}
+                    padding-left: 5px;
+                }
+            </style>
+            <hr>
+        </div>
+    </div>
+    <div id="asap" class="columns">
+        <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Как можно скорее</span></div>
+        <div class="column col-5">
+            <label class="form-switch float-right">
+                <input name="soonest" type="checkbox"><i class="form-icon"></i>
+            </label>
+        </div>
+    </div>
+    </div>
+<div style="margin: 3%">
+    <div class="columns">
+        <div class="column col-12"><i class="icon icon-message mr-2"></i><span>Комментарий</span></div>
+        <div class="column col-12">
+            <input id="order-comment" type="text" class="form-input" name="order-comment">
+        </div>
+{#        <div class="column col-4 text-right"><span></span><i class="icon icon-arrow-right"></i></div>#}
+    </div>
+</div>
+<div style="margin: 3%">
+    <div class="columns">
+        <div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип оплаты</span></div>
+        <div class="column col-7 text-right">
+            <select id="pay_method" name="pay_method" class="form-select">
+                <option id="pm_c" value="online payment" {% if not bot_payments %} disabled {% endif %}>Картой онлайн</option>
+                <option selected value="card in place">Картой при получении</option>
+                <option id="pm_c" value="cash">Наличными при получении</option>
+{#                <option id="pm_c_c" value="courier_cash" disabled>Наличными курьеру</option>#}
+            </select>
+        </div>
+    </div>
+</div>
+
+<div style="margin: 3%">
+    <div class="columns">
+        <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Применить промокод</span></div>
+        <div class="column col-5 ">
+            <div class="has-icon-right">
+                <input type="text" class="form-input" maxlength="16" id="promocode">
+                <i id="pc-status" class="form-icon icon"></i>
+            </div>
+            <div>
+                <input type="hidden" id="pc-id-hidden">
+                <div id="pc-desc" class=" desc mx-0 columns" hidden>
+                    <span class="col mr-2" id="pc-desc-t"></span>
+                    <span class="col" id="pc-desc-d"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div style="margin: 3%" id="bonus-payment">
+    <div class="columns">
+        <div class="column col-7"><i class="icon icon-emoji mr-2"></i><span>Оплатить бонусами </span><span id="user-bonus-amount"></span></div>
+        <div class="column col-5 text-right">
+            <label class="form-switch float-right">
+                <input type="checkbox" id="use_bonus"><i class="form-icon"></i>
+            </label>
+        </div>
+    </div>
+</div>
+
+{# модальное окно добавления адреса #}
+<div class="modal" id="modal-address">
+    <a href="#close-modal-address" class="modal-overlay" aria-label="Close"></a>
+    <div class="modal-container">
+        <div class="modal-header">
+            <a href="#close-modal-address" class="btn btn-clear float-right" aria-label="Close"></a>
+            <div class="modal-title h5">Добавить новый адрес</div>
+        </div>
+        <div class="modal-body">
+            <div class="content">
+                <!-- content here -->
+                <div class="form-group">
+                    <label class="form-label" for="input-address">Введите адрес ниже</label>
+                    <textarea class="form-input" id="input-address" placeholder="ул. Ленина 12, 7 подъезд, кв.  18"
+                        rows="2"></textarea>
+                    <button id="save-address" class="btn btn-primary input-group-btn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+
+        </div>
+    </div>
+</div>
+
+{# модальное окно добавления комментария #}
+<div class="modal" id="modal-comment">
+    <a href="#close-modal-comment" onclick="hideModal('modal-comment')" class="modal-overlay"
+        aria-label="Close"></a>
+    <div class="modal-container">
+        <div class="modal-header">
+            <a href="#close-modal-comment" onclick="hideModal('modal-comment')" class="btn btn-clear float-right"
+                aria-label="Close"></a>
+            <div class="modal-title h5">Комментарий к заказу</div>
+        </div>
+        <div class="modal-body">
+            <div class="content">
+                <!-- content here -->
+                <div class="form-group">
+                    <label class="form-label" for="input-comment">Комментарий к заказу</label>
+                    <textarea class="form-input" id="input-comment" placeholder="Хочу чтобы было вкусно"
+                        rows="3"></textarea>
+                    <button id="save-comment" class="btn btn-primary input-group-btn"
+                        onclick="comment=document.getElementById('input-comment').value">Сохранить</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+
+        </div>
+    </div>
+</div>

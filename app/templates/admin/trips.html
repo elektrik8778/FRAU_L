@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>Экскурсии</h3>
+        <section>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.trip', tid='0') }}">Создать</a>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Название</th>
+                        <th>Статус</th>
+                        <th>Операции</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in trips %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><a href="{{ url_for('admin.trip', tid=t.id) }}">{{ t.name }}</a></td>
+                            <td>
+                                {% if t.status==True %}
+                                    <span class="badge bg-success">Активна</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Не активна</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a class="btn btn-outline-danger">Удалить</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+{% endblock %}

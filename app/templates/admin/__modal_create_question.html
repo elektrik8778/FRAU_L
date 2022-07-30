@@ -1,0 +1,105 @@
+<div class="modal fade" id="createQuestion" tabindex="-1" role="dialog" aria-labelledby="chatInfoModalCenter" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Создать вопрос</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="post" style="padding: 2%" enctype="multipart/form-data">
+                    {{ create_question_form.hidden_tag() }}
+
+                    {{ create_question_form.question_type.label }}
+                    {{ create_question_form.question_type(class='form-control') }}
+
+                    {{ create_question_form.question_text.label }}
+                    {{ create_question_form.question_text(rows=3, class='form-control') }}
+
+
+                    <div class="variants form-group mt-3 mb-3">
+                        <p>Варианты ответов:</p>
+                        <div class="variants-body"></div>
+                        <a href="#" id="add-var">+ вариант</a>
+                    </div>
+
+
+                    {{ create_question_form.question_content.label }}
+                    {{ create_question_form.question_content(class='form-control') }}
+
+                    {{ create_question_form.answer_type.label }}
+                    {{ create_question_form.answer_type(class='form-control') }}
+
+                    {{ create_question_form.right_answer_text.label }}
+                    {{ create_question_form.right_answer_text(rows=3, class='form-control') }}
+
+                    {{ create_question_form.wrong_answer_text.label }}
+                    {{ create_question_form.wrong_answer_text(rows=3, class='form-control') }}
+
+                    {{ create_question_form.answer_content.label }}
+                    {{ create_question_form.answer_content(class='form-control') }}
+
+                    {{ create_question_form.answer_explanation.label }}
+                    {{ create_question_form.answer_explanation(rows=3, class='form-control') }}
+
+                    {{ create_question_form.save_question(class="btn btn-lg btn-primary form-control") }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let addBtn = $('#add-var')
+    addBtn.click(addVar)
+    addVar()
+    addVar()
+
+    function addVar() {
+        let variants = $('.variant-wrapper')
+        let variantsCount = variants.length
+        variantsCount >= 7 ? addBtn.hide() : addBtn.show()
+        let varNode = `
+            <div id="variant-wrapper-${variantsCount+1}" class="variant-wrapper  mt-3 mb-3">
+                <label class="var-label" for="variant-${variantsCount+1}"></label>
+                <input class="form-control var-input" id="variant-${variantsCount+1}" name="variant-${variantsCount+1}" type="text">
+                <input class="var-right" id="right-${variantsCount+1}" name="right-${variantsCount+1}" type="checkbox">
+                <label class="right-label" for="right-${variantsCount+1}">Верный</label>
+                <a onclick="delVar(${variantsCount+1});" class="del-var" href="#">удалить</a>
+            </div>
+        `
+        if (variantsCount<=7) $('.variants-body').append(varNode)
+
+        enumerateVariants()
+    }
+
+    function enumerateVariants() {
+        let variants = $('.variant-wrapper')
+        let  i=0
+        for (let item of variants) {
+            i++
+            $(item).attr('id', `variant-wrapper-${i}`)
+            $(item).children('.var-label').attr('for', `variant-${i}`)
+            $(item).children('.var-label').text('Вариант '+(i).toString())
+            $(item).children('.var-input').attr('id', `variant-${i}`)
+            $(item).children('.var-input').attr('name', `variant-${i}`)
+            $(item).children('.var-right').attr('id', `right-${i}`)
+            $(item).children('.var-right').attr('name', `right-${i}`)
+            $(item).children('.right-label').attr('for', `right-${i}`)
+            $(item).children('a').attr('onclick', `delVar(${i});`)
+        }
+    }
+
+    function delVar(e) {
+        $(`#variant-wrapper-${e}`).remove()
+        variantsCount = $('.variant-wrapper').length
+        variantsCount >= 8 ? addBtn.hide() : addBtn.show()
+        enumerateVariants()
+    }
+
+
+</script>

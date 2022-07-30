@@ -1,0 +1,59 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="p-2">
+        <a class="btn btn-outline-info mt-1 mb-1" data-toggle="modal" data-target="#createScheduledMessage">Создать новое</a>
+        <a class="btn btn-outline-info mt-1 mb-1" href="{{ url_for('admin.quiz_list', quiz_id='new') }}">Список викторин</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">id</th>
+                    <th scope="col">Тип задачи</th>
+                    <th scope="col">Тип сообщения</th>
+                    <th scope="col">Дата и время отправки</th>
+                    <th scope="col">Статистика</th>
+{#                    <th scope="col">Удалена</th>#}
+                    <th scope="col">Текст</th>
+                    <th scope="col">Ссылка</th>
+                    <th scope="col">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for message in scheduled_messages %}
+                <tr>
+                    <th>{{ loop.index }}</th>
+                    <td>{{ message.id }}</td>
+                    <td>{{ message.task_type }}</td>
+                    <td>{{ message.message_type }}</td>
+                    <td>{{ message.date_time }}</td>
+                    <td class="small">
+                        <p class="m-0">{{ 'Отправлена: '+message.get_tasks_for_sending(sent=True, deleted=False)|count|string }}</p>
+                        <p class="m-0">{{ 'Удалена: ' + message.get_tasks_for_sending(sent=True, deleted=True)|count|string}}</p>
+                    </td>
+{#                    <td>{{  }}</td>#}
+                    <td>{{ message.text }}</td>
+                    <td style="text-overflow: clip; font-size: xx-small">{{ message.content_link }}</td>
+                    <td>
+{#                        <a class="btn btn-primary">Редактировать</a>#}
+                        {% if current_user.tg_id %}
+                            <a class="btn btn-outline-success small" href="{{ url_for('admin.test_send_task', id=message.id) }}">Тестовая</a>
+                        {% endif %}
+                        <a class="btn btn-outline-danger small" href="{{ url_for('admin.delete_task', id=message.id) }}">Удалить</a>
+                        <a class="btn btn-outline-warning small" href="{{ url_for('admin.del_sent_messages', schedule_message_id=message.id) }}">Удалить отправленные</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'admin/__modal_create_scheduled_message.html' %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery.maskedinput.js') }}"></script>
+    <script>
+        $("#send-time").mask("9999-99-99 99:99:99");
+    </script>
+{% endblock %}

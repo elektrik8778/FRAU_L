@@ -1,0 +1,47 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>ID:{{ quiz.id }}</h3>
+        <div class="row">
+            <div class="container col ml-0" style="width: 30%">
+                <form action="" method="post" enctype="multipart/form-data">
+                    {{ edit_quiz_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ edit_quiz_form.quiz_name.label }}
+                        {{ edit_quiz_form.quiz_name(value=quiz.name, class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ edit_quiz_form.quiz_description.label }}
+                        {{ edit_quiz_form.quiz_description(rows=10, cols=50, class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ edit_quiz_form.quiz_final_text.label }}
+                        {{ edit_quiz_form.quiz_final_text(rows=10, cols=50, class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ edit_quiz_form.command.label }}
+                        {{ edit_quiz_form.command(class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ edit_quiz_form.save_quiz(class="btn btn-lg btn-primary") }}
+                        <a class="btn btn-lg btn-success" href="{{ url_for('admin.send_quiz', quiz_id=quiz.id, user_id=current_user.id) }}">Отправить на проверку</a>
+                        <a class="btn btn-lg btn-secondary" href="{{ url_for('admin.quiz_list') }}">Закрыть</a>
+                    </div>
+                </form>
+
+            </div>
+            <div class="col">
+                <a class="btn btn-info" data-toggle="modal" data-target="#createQuestion">Создать вопрос</a>
+                {% for question in quiz.questions() %}
+                    <li>
+                        <a href="/admin/question/{{ question.id }}">{{ question.question_text }}</a>
+                        <a href="{{ url_for('admin.del_question', quiz_id=quiz.id, question_id=question.id) }}">Х</a>
+                    </li>
+        {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% include 'admin/__modal_create_question.html' %}
+{% endblock %}

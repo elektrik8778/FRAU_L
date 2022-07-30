@@ -1,0 +1,111 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container">
+        <h3>Розыгрыш подарков</h3>
+        <div class="row">
+            <div class="col">
+                <div id="carouselPrizes" class="carousel carousel-dark slide" data-bs-interval="false" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        {% for p in prizes %}
+                            <button type="button" data-bs-target="#carouselPrizes" data-bs-slide-to="{{ (loop.index - 1)|string }}" {% if loop.index==1 %}class="active" aria-current="true"{% endif %} aria-current="true" aria-label="Slide {{ loop.index }}"></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for p in prizes %}
+                            <div {% if loop.index == 1 %}class="carousel-item active"{% else %} class="carousel-item" {% endif %}>
+                                <img style="max-height: 300px" src="{{ url_for('static', filename='uploads/prizes/'+p.pic) }}" class="d-block m-auto" alt="prize {{ loop.index }}">
+                                <div class="carousel-caption d-none d-md-block" style="background-color: rgba(100, 100, 100, .5)">
+                                    <h5 class="text-light">{{ p.name }}</h5>
+                                    <p class="text-light">{{ p.description }}</p>
+                                    <p class="prize" data-pid="{{ p.id }}" hidden>{{ p.id }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPrizes" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPrizes" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5 mb-5">
+            <div class="col-2 m-auto">
+                <form>
+                    <label for="prizes_count">Количество</label>
+                    <input id="prizes_count" class="form-control" type="number" value="1">
+                    <a id="submit-prizes" class="btn btn-success form-control">Разыграть</a>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h5>Победители</h5>
+                <table id="prizers" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Номерок</th>
+                        <th>Пользователь</th>
+                        <th>Приз</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for n in numbers %}
+                        <tr class="prizers-row">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ n.id }}</td>
+                            <td>{{ n.get_user().first_name }}</td>
+                            <td>{{ n.get_prize().name }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $('#submit-prizes').click(submitPrizes)
+
+        function submitPrizes(e) {
+            let count = $('#prizes_count').val()
+            let pid = $('.carousel-item.active .prize').data('pid')
+            $.ajax({
+                url: '/admin/distribute_prizes',
+                method: 'post',
+                data: JSON.stringify({
+                    pid: pid,
+                    count: count
+                }),
+                success: (e)=>{
+                    if (e!=='None') {
+                        updatePrizers(JSON.parse(e))
+                    }
+                }
+            })
+        }
+
+        function updatePrizers(numbers) {
+            for (let n of numbers) {
+                let row = $(`
+                <tr class="prizers-row">
+                    <td>${$('.prizers-row').length+1}</td>
+                    <td>${n.n}</td>
+                    <td>${n.user}</td>
+                    <td>${n.prize}</td>
+                </tr>
+                `)
+                $('#prizers tbody').append(row)
+            }
+        }
+    </script>
+{% endblock %}

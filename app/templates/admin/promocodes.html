@@ -1,0 +1,107 @@
+{%extends 'admin/base_admin.html'%}
+
+{%block content%}
+<main class="container">
+    <div class="container mt-3">
+        <div class="row mx-3">
+            <div class="col-9"></div>
+            <div class="col row">
+                <button class=" col btn btn-success float-right" data-bs-toggle="modal"
+                    data-bs-target="#promo-create">Новый промокод</button>
+            </div>
+        </div>
+        <div class="row">
+
+            <table class="table table-striped table-hover mt-3" data-toggle="table" data-pagination="true">
+                <thead>
+                    <tr>
+                        <th class="text-center" data-sortable="true" data-field="id">ID</th>
+                        <th class="text-center" data-sortable="true" data-field="name">Название</th>
+                        <th class="text-center" data-sortable="true" data-field="code">Промокод</th>
+                        <th class="text-center" data-sortable="true" data-field="discount">Скидка</th>
+                        <th class="text-center" data-field="enabled">Включен</th>
+                    </tr>
+                </thead>
+                {%for i in g.promocodes%}
+                <tr>
+                    <td class=" text-center">{{i.id}}</td>
+                    <td class=" text-center">{{i.name}}</td>
+                    <td class=" text-center">{{i.code}}</td>
+                    <td class=" text-center">{{i.discount*100}}%</td>
+                    <td class=" text-center center-block">
+                        <input class="form-check-input center-block" type="checkbox" {{'checked' if i.enabled else ''}} onchange="togglepromo({{i.id}})" id="enabled-{{i.id}}">
+                    </td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+    function togglepromo(id) {
+        e = document.getElementById('enabled-'+id)
+        e.toggleAttribute('disabled')
+        xhr = new XMLHttpRequest()
+        xhr.open("PATCH", '/api/promo/toggle/'+id)
+        xhr.onload = function () {
+            e.toggleAttribute('disabled')
+        }
+        xhr.send()
+    }
+
+    function make_promo(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * 
+     charactersLength));
+       }
+       return result;
+    }
+    var ll;
+</script>
+
+<div class="modal fade" id="promo-create" tabindex="-1" aria-labelledby="#promo-create" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="promo-create-label">Новый промокод</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="row g-3" method="POST">
+                    <div class="col-12">
+                        <label for="pc-1" class="form-label">Название</label>
+                        <input type="text" name="name" class="form-control" id="pc-1">
+                    </div>
+                    <div class="col-8">
+                        <label for="pc-2" class="form-label">Промокод</label>
+                        <div class=" input-group">
+                        <input type="text" id="pc-fld" name="code" class="form-control" maxlength="16" id="pc-2">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="document.getElementById('pc-fld').value = make_promo(8)">Случайный</button>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <label for="pc-3" class="form-label">Скидка</label>
+                        <input type="number" step="0.01" name="discount" max="1" min="0" class="form-control" id="pc-3" value="0" placeholder="0,34">
+                    </div>
+                    <div class="col-12">
+                        <label for="pc-4" class="form-label">Описание</label>
+                        <input type="text" class="form-control" name="desc" id="pc-4" placeholder="Даёт 34% скидки!!!">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="enabled" id="flexSwitchCheckDefault">
+                            <label class="form-check-label" for="flexSwitchCheckDefault">Доступен для
+                                использования</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Создать промокод</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

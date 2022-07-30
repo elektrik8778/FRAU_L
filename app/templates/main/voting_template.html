@@ -1,0 +1,41 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+    <style>
+        body {
+            font-family: "Helios Cond C";
+        }
+    </style>
+    <main class="container-fluid">
+        <h1>{{ voting.name }}</h1>
+        {% for s in voting.description.split('\n') %}
+            <p class="text-center">{{ s }}</p>
+        {% endfor %}
+        <div class="row">
+            {% for i in voting.get_items() %}
+                <div class="col-sm">
+                    <div class="row">
+                        <div class="col-sm-12 col-md-3 text-center">
+                            <h5>{{ i.name }}</h5>
+                            <img style="border-radius: 10px" width="200" src="{{ url_for('static', filename='images/votings/'+voting.id|string+'/'+i.id|string+'/'+i.pic) }}">
+                            <p class="text-center" style="text-align: justify">{{ i.description }}</p>
+                            {% if not viu %}
+                                <a class="btn btn-outline-primary" href="{{ url_for('main.vote', utgid=user.tg_id, viid = i.id) }}">Голосовать</a>
+                            {% else %}
+                                {% if viu.voting_item == i.id %}
+                                    <a class="btn btn-outline-success disabled" href="{{ url_for('main.vote', utgid=user.tg_id, viid = i.id) }}">Ваш выбор</a>
+                                {% else %}
+                                    <a class="btn btn-outline-secondary disabled" href="{{ url_for('main.vote', utgid=user.tg_id, viid = i.id) }}">Вы уже проголосовали</a>
+                                {% endif %}
+                            {% endif %}
+                            <hr>
+                        </div>
+{#                        <div class="col" style="min-height: 100%">#}
+{#                            #}
+{#                        </div>#}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </main>
+{% endblock %}

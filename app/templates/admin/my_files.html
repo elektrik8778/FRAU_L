@@ -1,0 +1,62 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div>
+        <h3>Файлы</h3>
+        <form enctype="multipart/form-data" method="post">
+            {{ form.hidden_tag() }}
+
+            <p>{{ form.files(class='form-control') }}</p>
+
+            <p>{{ form.upload(class='btn btn-outline-success') }}</p>
+        </form>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Картинка</th>
+                <th>Ссылка</th>
+                <th>Операция</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for f in files %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><img width="150" src="{{ url_for('static', filename='uploads/files/'+f) }}"></td>
+                    <td><a href="https://{{ s+'/get_file/'+f }}">{{ f }}</a></td>
+                    <td>
+                        <a class="btn btn-outline-success copy-link" data-url="https://{{ s+'/get_file/'+f }}">Скопировать ссылку</a>
+                        <a class="btn btn-outline-danger" href="{{ url_for('admin.del_file', filename=f) }}">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+
+{#        <a class="btn btn-success" href="{{ url_for('admin.download_folder', filename=filename) }}">#}
+{#            Скачать из папки все файлы#}
+{#        </a>#}
+{#        <ol>#}
+{#        {% for file in files %}#}
+{#            {% if file %}#}
+{#                <li><a href="{{ url_for('admin.uploads', filename=filename+'/'+file) }}" class="btn btn-link">{{ file }}</a></li>#}
+{#            {% else %}#}
+{#                <li><a href="{{ url_for('admin.uploads', filename=filename) }}" class="btn btn-link">{{ file }}</a></li>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
+{#        </ol>#}
+    </div>
+
+    <script>
+    $('.copy-link').click(copy_link)
+    {#if (window.navigator.clipboard) {#}
+    {#    console.log('Clipboard API available');}#}
+
+    function copy_link(e){
+        navigator.clipboard.writeText(e.currentTarget.dataset['url'])
+    }
+    </script>
+{% endblock %}

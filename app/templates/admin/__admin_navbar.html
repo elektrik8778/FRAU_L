@@ -1,0 +1,35 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="{{ url_for('admin.admin') }}">Лаваши бот</a>
+    <span>({{ current_user.first_name }})</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.users_list') }}">Все пользователи</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.message_schedule') }}">Рассылки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.moderation') }}">Модерация групп</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.categories') }}">Категории</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.foods') }}">Список товаров</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.orders') }}">Заказы</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.promocodes') }}">Промокоды</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.files') }}">Файлы</a>
+            </li>
+        </ul>
+    </div>
+</nav>

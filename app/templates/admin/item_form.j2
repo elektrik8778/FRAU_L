@@ -1,0 +1,148 @@
+<link rel="stylesheet" href="{{url_for('static', filename='css/croppie.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/utils.css')}}" />
+<script type='application/javascript' src="{{url_for('static', filename='js/croppie.js')}}"></script>
+<!-- <script type='application/javascript' src="{{url_for('static', filename='js/jquery.min.js')}}"></script> -->
+
+
+<script>
+    images_crops = {}
+</script>
+
+<div class="modal" id="new">
+    <a href="#" class="modal-overlay" aria-label="Close"></a>
+    <div class="modal-container">
+        <div class="modal-header">
+            <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+            <h2>Новый товар</h2>
+        </div>
+        <div class="modal-body">
+            <form class="form-group" method="POST" action="/api/food/add" enctype="multipart/form-data">
+                <label class="form-label" for="title">Название</label>
+                <input class="form-input" id="title" name="title" type="text" required placeholder="Название"
+                    max="64" />
+
+                <label class="form-label" for="good_desc">Описание</label>
+                <textarea class="form-input" name="good_desc" id='good_desc' style="resize: none;"></textarea>
+
+                <label class="form-label" for="category">Категория</label>
+                <select class="form-select" name="category" id="category">
+                    {%  for i in g.cat.query.order_by('id').all() %}
+                        <option value="{{i.id}}">{{i.cat_name}}</option>
+                    {% endfor  %}
+                </select>
+
+                <div class="columns">
+                    <div class=" column col-5 fl">
+                        <label class="form-label" for="price">Цена</label>
+                        <div class=" has-icon-right">
+                            <input class="form-input" id="price" name="price" step="0.01" required type="number"
+                                placeholder="Цена" />
+                            <img class="form-icon icon" src="{{url_for('static', filename='images/rur.svg')}}" />
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <br><br>
+                        <div class="form-group">
+                            <label class="form-switch">
+                                <input type="checkbox" name="avail" id="avail">
+                                <i class="form-icon"></i>Доступно для продажи
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div id="images" class="columns">
+                    <div class="column col-auto" name='images-divs'>
+                        <label for='img-1'>
+                            <img id='image_0_preview' style="height: 140px; width:140px;"
+                                src='{{url_for("static", filename="images/add_photo-512.png")}}'>
+                        </label>
+                        <input class="form-input d-hide" id="img-1" name="image_0" type="file" accept="image/*"
+                            oninput="new_field(); d = document.getElementsByName(this.name)[0]; d.removeAttribute('oninput', 'removeinput(this)'); d.setAttribute('onclick', 'event.preventDefault(); removeinput(this)'); make_preview(this.name); this.parentElement.classList.add('tint')" />
+                    </div>
+                </div>
+                <br>
+                <div class="columns">
+                    <div class="column col-8"></div>
+                    <div class="column col-4">
+                        <button type="submit" class="form-input btn btn-primary"
+                            onclick="document.getElementById('pointsjson').value = JSON.stringify(images_crops)">Добавить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id='cropper'>
+    <a href="#new" id='close-cropper' class="modal-overlay" aria-label="Done" onmousedown="save_points()"></a>
+    <div class="modal-container">
+        <div>
+            <div style="height: 400px !important">
+                <div>
+                    <div id="upload-cropper">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="height: 60px; z-index: -1"></div>
+        <div style="height: 60px;">
+            <button class="btn btn-primary float-right"
+                onclick="save_points(); document.getElementById('close-cropper').click()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    img_counter = 1
+    edited_file = ""
+    edited_filename = ""
+
+    function make_preview(name) {
+        document.getElementById(name + '_preview').src = URL.createObjectURL(document.getElementsByName(name)[0].files[0])
+        edited_file = name + '_preview'
+        edited_filename = name
+    }
+
+    function removeinput(elem) {
+        elem.parentElement.remove()
+        if (document.getElementsByName('images-divs').length == 7) {
+            new_field()
+        }
+    }
+
+    function new_field() {
+        if (document.getElementsByName('images-divs').length >= 8) {
+            return
+        }
+        newdiv = document.createElement('div')
+        newdiv.classList.add("column")
+        newdiv.classList.add("col-auto")
+        newdiv.setAttribute('name', 'images-divs')
+
+        newlabel = document.createElement("label")
+        newlabel.setAttribute('for', 'image_' + String(img_counter))
+        newimg = document.createElement("img")
+        newimg.setAttribute('id', 'image_' + String(img_counter) + "_preview")
+        newimg.setAttribute('style', 'height: 140px; width:140px;')
+        newimg.setAttribute('src', '{{url_for("static", filename="images/add_photo-512.png")}}')
+        newimg.setAttribute('data-edge', 'true')
+        newlabel.appendChild(newimg)
+
+        document.getElementById("images").appendChild(newlabel)
+
+        new_node = document.createElement("input")
+        new_node.classList.add("form-input")
+        new_node.classList.add("d-hide")
+        new_node.setAttribute("name", "image_" + String(img_counter))
+        new_node.setAttribute("id", "image_" + String(img_counter))
+        new_node.setAttribute("type", "file")
+        new_node.setAttribute("accept", "image/*")
+        new_node.setAttribute('oninput', "new_field(); d = document.getElementsByName(this.name)[0]; d.removeAttribute('oninput', 'removeinput(this)'); d.setAttribute('onclick', 'event.preventDefault(); removeinput(this)'); make_preview(this.name); this.parentElement.classList.add('tint')")
+        newdiv.appendChild(newlabel)
+        newdiv.appendChild(new_node)
+        document.getElementById("images").appendChild(newdiv)
+        img_counter++;
+    }
+</script>

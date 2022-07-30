@@ -1,0 +1,77 @@
+{% extends 'main/base_spectre.j2' %}
+
+{#
+{% block navbar %}
+{% include 'main/__navbar_user.html' %}
+{% endblock %}
+#}
+
+{% block content %}
+
+<script>
+  function upd_pg() {
+    window.location.reload()
+  }
+  function back() {
+    location.pathname = '/menu'
+  }
+</script>
+{#<button onclick="back()">back</button>#}
+{#<button onclick="upd_pg()">update</button>#}
+<script>
+  //uid = 123
+  json = { 'id': localStorage.uid, 'fid': 0 }
+  function add_to_cart(id, el) {
+    console.log(el)
+    xhr = new XMLHttpRequest()
+
+    xhr.onload = function () {
+      el.setAttribute("disabled", true)
+      el.innerHTML = "✅"
+    }
+
+    xhr.open("PUT", '/api/cart', true)
+    r = json
+    r.fid = id
+    xhr.send(JSON.stringify(r))
+    bot.MainButton.show()
+  }
+</script>
+<main>
+  <a href="{{ url_for('main.category_list') }}" class="mt-2 mb-2"><i class="icon icon-arrow-left mr-1"></i>Меню</a>
+  {% set foods = g.food.query.filter_by(available=True).order_by(g.food.id).all() if not fcid else
+  g.food.query.filter(g.food.available==True, g.food.category == fcid).order_by(g.food.id).all() %}
+  {% for i in foods %}
+  <div class="container" style="padding: 0 10% 0 10%; margin-top: 2%">
+    <div class="columns">
+      <div class="col-12">
+        <h5>{{i.food_name}}</h5>
+        <p class="text-small">{{i.description}}</p>
+        <img
+                loading="lazy"
+                src="{{url_for('static', filename='uploads/'+g.pics.query.filter_by(file_type='photo', belongs_to=i.id).order_by('id').first().filename)}}"
+                class="img-responsive">
+      </div>
+      <div class="container mt-1 mb-1">
+        <div class="columns">
+
+
+
+          <div class="column col-6 col-mr-auto text-right">
+            <button class="btn btn-primary" id="itm_{{i.id}}" onclick="add_to_cart({{i.id}}, this)">В корзину</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  {% endfor %}
+</main>
+
+{% endblock %}
+
+{% block scripts_after %}
+<script>
+  sh(localStorage.uid)
+</script>
+{% endblock %}

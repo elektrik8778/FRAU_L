@@ -1,0 +1,33 @@
+<div class="text-center container-fluid">
+    <div class="row stream-container">
+        <iframe class="col" id="stream" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="row text-center but-container" style="margin-bottom: 3%">
+        <a class="btn col-md btn-block stream-btn" data-toggle="modal" data-target="#streamInfoModalCenter">{{ "Программа трансляции"|upper }}</a>
+        <a class="btn col-md btn-block stream-btn" data-toggle="modal" data-target="#speakersInfoModalCenter">{{ "Спикеры"|upper }}</a>
+        <a class="btn col-md btn-block stream-btn" data-toggle="modal" data-target="#chatInfoModalCenter">{{ "Чат-бот"|upper }}</a>
+    </div>
+    <div class="row">
+        <div class="input-group mb-3">
+            <input id="socket-message-text" type="text" class="form-control" placeholder="Ваше сообщение" aria-label="Recipient's username" aria-describedby="button-addon2">
+            <div class="input-group-append">
+                <div class="separator"></div>
+                <button class="btn btn-outline-secondary send-socket-message" type="button" id="button-addon2">ОТПРАВИТЬ</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    resizeStream();
+    window.onresize=resizeStream;
+    function resizeStream() {
+        let windowWidth = window.innerWidth;
+        if (windowWidth>980) {
+            let streamWidth = windowWidth/2.4;
+            let streamHeight = streamWidth*506/900;
+            $('#stream').width(streamWidth);
+            $('#stream').height(streamHeight);
+        }
+
+    }
+</script>

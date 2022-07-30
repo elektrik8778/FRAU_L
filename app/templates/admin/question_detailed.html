@@ -1,0 +1,129 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container pl-4 pr-4">
+        <h3>Вопрос №{{ q.id }}</h3>
+        <a class="btn btn-secondary" href="/create_quiz_{{ q.quiz().id }}">Закрыть</a>
+        <form method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            {{ form.question_type.label }}
+            {{ form.question_type(class='form-control') }}
+
+            {{ form.question_text.label }}
+            {{ form.question_text(class='form-control') }}
+
+            <div class="variants form-group mt-3 mb-3">
+                <p class="mb-0">Варианты ответов:</p>
+                <div class="variants-body mt-0"></div>
+                <a href="#" id="add-var">+ вариант</a>
+            </div>
+
+            {{ form.question_content.label }}
+            {{ form.question_content(class='form-control') }}
+            {% if q.question_content_link %}
+                {% for pic in q.question_content_link.split(",") %}
+                    <p>
+                        <img width="150" src="{{ url_for('static', filename=pic.split('static')[-1]) }}">
+                    </p>
+                {% endfor %}
+            {% endif %}
+
+            {{ form.answer_type.label }}
+            {{ form.answer_type(class='form-control') }}
+
+            {{ form.right_answer_text.label }}
+            {{ form.right_answer_text(rows=3, class='form-control') }}
+
+            {{ form.wrong_answer_text.label }}
+            {{ form.wrong_answer_text(rows=3, class='form-control') }}
+
+            {{ form.answer_content.label }}
+            {{ form.answer_content(class='form-control') }}
+            {% if q.answer_content_link %}
+                <p>
+                    <img width="150" src="{{ url_for('static', filename=q.answer_content_link.split('static')[-1]) }}">
+                </p>
+            {% endif %}
+
+            {{ form.answer_explanation.label }}
+            {{ form.answer_explanation(rows=3, class='form-control') }}
+
+            {{ form.save_question(class="btn btn-lg btn-primary form-control") }}
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        let variants_dict = {{ variants|safe }};
+        let addBtn = $('#add-var')
+        addBtn.click(addVar)
+
+        for (let v in variants_dict) parseVar(variants_dict[v])
+
+        function parseVar(variant) {
+            let variants = $('.variant-wrapper')
+            let variantsCount = variants.length
+            variantsCount >= 7 ? addBtn.hide() : addBtn.show()
+            let varNode = `
+                <div id="variant-wrapper-${variantsCount+1}" class="variant-wrapper  mt-3 mb-3">
+                    <label class="var-label" for="variant-${variantsCount+1}"></label>
+                    <input class="form-control var-input" id="variant-${variantsCount+1}" name="variant-${variantsCount+1}" type="text" value="${variant.text}">
+                    <input class="var-right" id="right-${variantsCount+1}" name="right-${variantsCount+1}" type="checkbox">
+                    <label class="right-label" for="right-${variantsCount+1}">Верный</label>
+                    <a onclick="delVar(${variantsCount+1});" class="del-var" href="#">удалить</a>
+                </div>
+            `
+
+            if (variantsCount<=7) $('.variants-body').append(varNode)
+
+            $(`#right-${variantsCount+1}`).prop('checked', variant.right);
+
+            enumerateVariants()
+        }
+
+        function addVar() {
+            let variants = $('.variant-wrapper')
+            let variantsCount = variants.length
+            variantsCount >= 7 ? addBtn.hide() : addBtn.show()
+            let varNode = `
+                <div id="variant-wrapper-${variantsCount+1}" class="variant-wrapper  mt-3 mb-3">
+                    <label class="var-label" for="variant-${variantsCount+1}"></label>
+                    <input class="form-control var-input" id="variant-${variantsCount+1}" name="variant-${variantsCount+1}" type="text">
+                    <input class="var-right" id="right-${variantsCount+1}" name="right-${variantsCount+1}" type="checkbox">
+                    <label class="right-label" for="right-${variantsCount+1}">Верный</label>
+                    <a onclick="delVar(${variantsCount+1});" class="del-var" href="#">удалить</a>
+                </div>
+            `
+            if (variantsCount<=7) $('.variants-body').append(varNode)
+
+            enumerateVariants()
+        }
+
+        function enumerateVariants() {
+            let variants = $('.variant-wrapper')
+            let  i=0
+            for (let item of variants) {
+                i++
+                $(item).attr('id', `variant-wrapper-${i}`)
+                $(item).children('.var-label').attr('for', `variant-${i}`)
+                $(item).children('.var-label').text('Вариант '+(i).toString())
+                $(item).children('.var-input').attr('id', `variant-${i}`)
+                $(item).children('.var-input').attr('name', `variant-${i}`)
+                $(item).children('.var-right').attr('id', `right-${i}`)
+                $(item).children('.var-right').attr('name', `right-${i}`)
+                $(item).children('.right-label').attr('for', `right-${i}`)
+                $(item).children('a').attr('onclick', `delVar(${i});`)
+            }
+        }
+
+        function delVar(e) {
+            $(`#variant-wrapper-${e}`).remove()
+            variantsCount = $('.variant-wrapper').length
+            variantsCount >= 8 ? addBtn.hide() : addBtn.show()
+            enumerateVariants()
+        }
+    </script>
+{% endblock %}

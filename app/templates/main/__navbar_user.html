@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-md navbar-dark container-fluid text-right">
+    <a href="#" class="navbar-brand">TripWalk</a>
+    <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#user-controls" aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="user-controls">
+        <ul class="navbar-nav">
+{#            <li class="nav-item small">#}
+{#                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">#}
+{#                    Привет, {{ current_user.first_name|string + ' ' + current_user.last_name|string }}!#}
+{#                </a>#}
+{#            </li>#}
+{#            {% if current_user.role == 'admin' or current_user.role == 'moderator' %}#}
+{#                <li class="nav-item small">#}
+{#                    <a class="nav-link" href="{{ url_for('admin.admin') }}" tabindex="-1" aria-disabled="true">Админка</a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#            <li class="nav-item small">#}
+{#                <a class="nav-link" href="{{ url_for('auth.logout') }}" tabindex="-1" aria-disabled="true">Выйти</a>#}
+{#            </li>#}
+            <li class="nav-item small">
+                <a class="nav-link" tabindex="-1" aria-disabled="true" data-toggle="modal" data-target="#contactsModalCenter" href="#">Контакты и реквизиты</a>
+            </li>
+            <li class="nav-item small">
+                <a class="nav-link" tabindex="-1" aria-disabled="true" data-toggle="modal" data-target="#paymentModalCenter" href="#">Способы оплаты</a>
+            </li>
+            <li class="nav-item small">
+                <a class="nav-link" tabindex="-1" aria-disabled="true" data-toggle="modal" data-target="#confidenceModalCenter" href="#">Политика конфиденциальности</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+{% include "main/__modal_contacts.html" %}
+{% include "main/__modal_payment_info.html" %}
+{% include "main/__modal_confidence_info.html" %}

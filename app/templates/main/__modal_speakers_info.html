@@ -1,0 +1,33 @@
+<div class="modal fade" id="speakersInfoModalCenter" tabindex="-1" role="dialog" aria-labelledby="chatInfoModalCenter" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title white-text" id="exampleModalCenterTitle">СПИКЕРЫ КОНФЕРЕНЦИИ</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="speaker row">
+                    <img class="col-sm-3 align-middle" src="{{ url_for('static', filename='images/speakers/user.png') }}">
+                    <p class="white-text col-sm-9 align-middle"><b>Снегоходов Сергей Валерьевич</b><br> генеральный директор</p>
+                </div>
+                <div class="speaker row">
+                    <img class="col-sm-3" src="{{ url_for('static', filename='images/speakers/user.png') }}">
+                    <p class="white-text col-sm-9"><b>Роман Попов</b><br> ведущий мероприятия</p>
+                </div>
+{#                <div class="speaker row">#}
+{#                    <img class="col-sm-3" src="{{ url_for('static', filename='images/speakers/kulikov.jpg') }}">#}
+{#                    <p class="white-text col-sm-9"><b>Дмитрий Куликов</b>. Тревел-блогер <a class="white-text" href="https://www.instagram.com/oktagon/" target="_blank">@Oktagon</a>, Консультант по тревел-маркетингу.</p>#}
+{#                </div>#}
+{#                <div class="speaker row">#}
+{#                    <img class="col-sm-3" src="{{ url_for('static', filename='images/speakers/ashmarova.jpg') }}">#}
+{#                    <p class="white-text col-sm-9"><b>Анна Ашмарова</b>. Директор по консалтингу RussiaDiscovery.</p>#}
+{#                </div>#}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info stream-btn" style="padding: 10px" data-dismiss="modal">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+</div>

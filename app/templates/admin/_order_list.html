@@ -1,0 +1,19 @@
+<div class="modal fade" id="order-modal-{{i.id}}" tabindex="-1" aria-labelledby="order-modal-{{i.id}}"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="order-modal-{{i.id}}-label">Заказ #{{i.id}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="modal-body-{{ i.id }}" class="modal-body">
+                <script>
+                    $('#modal-body-{{ i.id }}').append($(`{{ i.get_order_html()|safe }}`))
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

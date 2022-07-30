@@ -1,0 +1,9 @@
+<form class="container col-sm-12 margin-top-null" action="" method="post">
+{#    <h3 class="mb-3 font-weight-normal">Отправить сообщение в телеграм</h3>#}
+    {{ send_tg_mes_form.hidden_tag() }}
+    {{ send_tg_mes_form.text(size=32, class='col-sm-12 form-control', placeholder='Текст') }}<br>
+    {% for error in send_tg_mes_form.text.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+    {{ send_tg_mes_form.submit(class="btn btn-lg btn-primary") }}
+</form>

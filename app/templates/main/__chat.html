@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат</title>
+    <style>
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Regular.otf') }}");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Bold.otf') }}");
+            font-weight: bold;
+            font-style: normal;
+            }
+
+        body, * {
+            font-family: "RostelecomBasis";
+            box-sizing: border-box;
+            margin: 0;
+        }
+        #chat{
+            background: rgb(15, 55, 114);
+            height: 100vh;
+            max-height: 100%;
+            overflow: scroll;
+            font-size: xx-large;
+            padding-left: 2%;
+            text-align: left;
+        }
+        .chat-username {
+            background: none;
+            color: #9fcdff;
+            font-weight: bold;
+            margin-bottom: 0;
+            }
+
+        .chat-text {
+            background: none;
+            margin-top: 0!important;
+            color: white;
+            margin-bottom: 10px!important;
+            }
+        .chat-pic {
+            background: none;
+            height: 30vh;
+            margin-top: 0!important;
+            margin-bottom: 0!important;
+        }
+    </style>
+</head>
+<body>
+<div id="chat" class="container"></div>
+</body>
+<script>
+    function updateChat() {
+        let url = '/update_chat'
+        data = {
+            request: 'chat'
+        }
+        params = {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }
+        fetch(url, params)
+            .then(response=>response.json())
+                .then(data=>{
+                    {#console.log(`${name}: ${text}`)#}
+                    console.log(data)
+                    let m = document.querySelector('#chat')
+                    m.innerHTML = ''
+                    for (let message of data['data']) {
+                        let name = message['user']
+                        let text = message['text']
+                        let link = message['link']
+                        let username = document.createElement('p')
+                        username.classList.add('chat-username')
+                        username.innerText = `${name}:`
+                        let chat_mes = document.createElement('p')
+                        chat_mes.classList.add('chat-text')
+                        chat_mes.innerText = `${text}`
+                        m.appendChild(username)
+                        if (link) {
+                            let chat_pic = document.createElement('img')
+                            chat_pic.classList.add('chat-pic')
+                            chat_pic.src = link
+                            chat_pic.alt = 'photo from user'
+                            m.appendChild(chat_pic)
+                        }
+                        m.appendChild(chat_mes)
+
+                    }
+                })
+    }
+    let timerId = setInterval(updateChat, 1000);
+</script>
+</html>

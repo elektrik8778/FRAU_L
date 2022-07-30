@@ -1,0 +1,22 @@
+.env
+*.fid
+nginx conf
+ngrok
+static/uploads/
+migrations
+venv
+.idea/
+__pycache__/
+app/static/images/votings/
+app/static/uploads/bot_users/
+app/static/uploads/quiz
+app/static/uploads/bulk_messages
+app/static/uploads/prizes/
+app/static/video/
+main_menu.txt
+app/static/json/
+app/static/uploads/files/
+app/static/uploads/trips/
+.vscode
+app/static/uploads/
+app/static/images/*

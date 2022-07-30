@@ -1,0 +1,13 @@
+<form class="container col-sm-12 margin-top-null" action="" method="post">
+    {{ send_group_tg_mes_form.hidden_tag() }}
+    {{ send_group_tg_mes_form.groups.label(class='mb-0 mt-2') }}
+    {{ send_group_tg_mes_form.groups(class='form-control') }}
+    {{ send_group_tg_mes_form.tags.label(class='mb-0 mt-2') }}
+    {{ send_group_tg_mes_form.tags(class='form-control') }}
+    {{ send_group_tg_mes_form.text.label(class='mb-0 mt-2') }}
+    {{ send_group_tg_mes_form.text(size=32, class='col-sm-12 form-control', placeholder='Текст') }}<br>
+    {% for error in send_group_tg_mes_form.text.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+    {{ send_group_tg_mes_form.submit(class="btn btn-lg btn-primary") }}
+</form>

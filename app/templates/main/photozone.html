@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Фотозона</title>
+    <style>
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Regular.otf') }}");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'RostelecomBasis';
+            src: url("{{ url_for('static', filename='fonts/rtm/RostelecomBasis-Bold.otf') }}");
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        body, * {
+            {#opacity: 100%;#}
+            font-family: "RostelecomBasis";
+            box-sizing: border-box;
+            margin: 0;
+        }
+        section {
+            background: yellow;
+            opacity: 100%;
+            height: 100vh;
+        }
+
+        #template {
+            position: relative;
+            margin: 0;
+            {#background-image: url("{{ url_for('static', filename='images/template_horizontal.png') }}");#}
+            height: 100vh;
+            background: none!important;
+            {#background-size: contain;#}
+            {#background-repeat: no-repeat;#}
+            z-index: 10;
+        }
+
+        .photo {
+            position: absolute;
+            left: 0;
+            top: 6%;
+            background: none!important;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <img id="template" src="{{ url_for('static', filename='images/template_horizontal.png') }}">
+        <img class="photo" src="">
+    </section>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        var message
+        var photozone = document.querySelector('section')
+        var template = document.querySelector('#template')
+        var photo = document.querySelector('.photo')
+        var showing = false
+
+        function updateChat() {
+            let url = "{{ vidget_prefix }}"+'/update_chat'
+            {#let url = 'https://priznaniertdv2019.ru/update_chat';#}
+            data = {
+                request: 'photozone'
+            }
+            params = {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }
+            if (showing === false) {
+                fetch(url, params)
+                .then(response => response.json())
+                .then(data => {
+                    for (let message of data['data']) {
+                        let name = message['user']
+                        let link = message['link']
+                        message.name = name
+                        message.link = link
+                        showing = true
+                        showMessage(message)
+                    }
+                })
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showMessage(message) {
+            photo.width = template.clientWidth
+
+            photo.src = message.link
+
+            photo_node = $('.photo')
+            photo_node.fadeIn(1000)
+            sleep(8000)
+                .then(()=>{
+                    photo_node.fadeOut(1000)
+                    showing = false
+                })
+        }
+
+        setInterval(updateChat, 3000);
+</script>
+</body>
+</html>

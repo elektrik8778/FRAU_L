@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Бегущая строка</title>
+    <style>
+        body{
+            margin: 0;
+        }
+        marquee {
+            color: white;
+            background: rgb(15, 55, 114);
+            font-size: xx-large;
+            margin-top: auto;
+            margin-bottom: auto;
+            padding-top: 25%;
+            padding-bottom: 25%;
+        }
+
+        .chat-username {
+            color: #9fcdff;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .chat-text {
+            margin-right: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <marquee id="marq" height="100px" direction="left" scrollamount="5">
+    </marquee>
+</body>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script>
+function updateChat() {
+        let url = "{{ vidget_prefix }}"+'/update_chat'
+        {#let url = 'https://priznaniertdv2019.ru/update_chat'#}
+        data = {
+            request: 'marquee'
+        }
+        params = {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }
+        fetch(url, params)
+            .then(response=>response.json())
+                .then(data=>{
+                    let m = document.querySelector('#marq')
+                    m.innerText = ''
+                    let reversed = data['data'].reverse()
+                    for (let message of reversed) {
+                        let name = message['user']
+                        let text = message['text']
+                        let username = document.createElement('span')
+                        username.classList.add('chat-username')
+                        username.innerText = `${name}:`
+                        let chat_mes = document.createElement('span')
+                        chat_mes.classList.add('chat-text')
+                        chat_mes.innerText = `${text}`
+                        m.appendChild(username)
+                        m.appendChild(chat_mes)
+                        {#m.innerText += ` ${name}: ${text} `#}
+                    }
+                })
+    }
+
+    setInterval(updateChat, 5000);
+</script>
+</html>

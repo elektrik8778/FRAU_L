@@ -1,0 +1,26 @@
+<div class="container-fluid messages-area overflow-auto">
+    {% for message in user_messages %}
+        <div class="message {{ message.direction }}">
+            <p class="message-date">{{ message.date_time|string + ' ' + message.type }}</p>
+            {% if message.content %}
+                {% if message.type == 'photo' %}
+                    <img class="message-content photo" src="{{ message.content }}" alt="photo">
+                {% endif %}
+                {% if message.type == 'video' %}
+                    <video class="message-content video" controls="controls" width="100">
+                        <source src="{{ message.content }}">
+                    </video>
+                {% endif %}
+                {% if message.type == 'voice' %}
+                    <audio class="message-content voice" controls="controls">
+                        <source src="{{ message.content }}">
+                    </audio>
+                {% endif %}
+            {% endif %}
+            <p class="message-text">{{ message.text }}</p>
+        </div>
+    {% endfor %}
+</div>
+<div>
+    {% include 'admin/__send_tg_message.html' %}
+</div>

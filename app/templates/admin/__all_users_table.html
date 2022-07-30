@@ -1,0 +1,158 @@
+<div class="container-fluid">
+    <h3>Все пользователи</h3>
+
+    <table id="users" class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">id</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Телефон</th>
+            <th scope="col">Telegram ID</th>
+            <th scope="col">Группа</th>
+            <th scope="col">Статус</th>
+            <th scope="col">Тэги</th>
+            <th scope="col">Роль</th>
+{#            <th scope="col">Рассылки</th>#}
+{#            <th scope="col">Тикеты (шт.)</th>#}
+            <th scope="col">Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let table = $('#users').DataTable({
+            ajax: '/admin/get_users_data',
+            serverSide: true,
+            columns: [
+                {data: 'num', orderable: false},
+                {data: 'id', orderable: true},
+                {data: 'first_name', orderable: true},
+                {data: 'phone', orderable: true},
+                {data: 'tg_id', orderable: false},
+                {data: 'group', orderable: false},
+                {data: 'status', orderable: false},
+                {data: 'tags', orderable: false},
+                {data: 'role', orderable: false},
+                {#{data: 'messages', orderable: false},#}
+                {#{data: 'tickets', orderable:  true},#}
+                {data: 'id', orderable: false}
+            ],
+            language: {
+                search: "Искать в таблице (по статусу, имени, группе, тэгу, телефону)",
+                lengthMenu: "Показать _MENU_ пользователей",
+                info: "Показаны с _START_ по _END_ из _TOTAL_ пользователей",
+                infoEmpty: "Показаны с 0 по 0 из 0 пользователей",
+                infoFiltered: "(отфильтровано из _MAX_ пользователей)",
+                paginate: {
+                    first:      "Первая",
+                    previous:   "Предыдущая",
+                    next:       "Следующая",
+                    last:       "Последняя"
+                },
+            }
+        });
+
+        table.on('draw', completeTable);
+    })
+
+    function completeTable() {
+        for (let user of $('#users tbody tr')) {
+            updateUser(user)
+        }
+    }
+
+    function updateUser(user) {
+        let uid = $($(user).children()[1]).text()
+        let uname = $($(user).children()[2]).text()
+
+        {# имя пользователя ссылкой #}
+        $($(user).children()[2]).empty()
+        $($(user).children()[2]).append($(`<a href="/admin/user/${uid}">${uname}</a>`))
+
+        {# тэги #}
+        getUserTags(user)
+
+        {# кнопки управления пользователем #}
+        $($(user).children()[9]).empty()
+        $($(user).children()[9]).append($(`<a class="btn btn-outline-primary" href="/admin/set_empty_status/${uid}">Обнулить статус</a>`))
+        {#$($(user).children()[9]).append($(`<a class="btn btn-outline-danger" href="#">Удалить</a>`))#}
+    }
+
+    function getUserTags(user) {
+        let uid = $($(user).children()[1]).text()
+        let tags = {{ tags|safe }};
+        let tag_cell = $($(user).children()[7])
+        tag_cell.empty()
+
+        tag_cell.append(`
+        <div class="dropdown" id="addTags${uid}">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton${uid}" data-bs-toggle="dropdown" aria-expanded="false">
+                Добавить тэг
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${uid}"></ul>
+        </div>
+        `)
+
+        for (let tag of tags) {
+            let drd_item = $(`<li></li>`)
+            let item_a = $(`<a class="dropdown-item add-tag" data-uid="${uid}" data-tid="${tag[0]}">${tag[1]}</a>`)
+            $(`#addTags${uid} ul`).append(drd_item)
+            drd_item.append(item_a)
+            item_a.click(addTag)
+        }
+
+        $.ajax({
+            url: `/admin/get_user_tags/${uid}`,
+            method: 'get',
+            success: (e)=>{
+                for (let tag of JSON.parse(e)) {
+                    let tag_node = $(`<span class="badge bg-info" style="margin-right: 5px;">${tag[1]}</span>`)
+                    let del_tag_node = $(`<a class="del-tag" data-uid="${uid}" data-tid="${tag[0]}" href="#">Х</a>`)
+                    tag_cell.append(tag_node)
+                    tag_node.append(del_tag_node)
+                    del_tag_node.click(delTag)
+                }
+            }
+        })
+    }
+
+    function addTag(e) {
+        let uid = $(e.currentTarget).data('uid')
+        let tid = $(e.currentTarget).data('tid')
+        let user = $(e.currentTarget).parents('tr')
+        $.ajax({
+            url: '/admin/set_user_tag',
+            method: 'post',
+            data: JSON.stringify({
+                uid: uid,
+                tid: tid
+            }),
+            success: (t)=>{
+                updateUser(user)
+            }
+        })
+    }
+
+    function delTag(e) {
+        let uid = $(e.currentTarget).data('uid')
+        let tid = $(e.currentTarget).data('tid')
+        let user = $(e.currentTarget).parents('tr')
+        $.ajax({
+            url: '/admin/del_user_tag',
+            method: 'post',
+            data: JSON.stringify({
+                uid: uid,
+                tid: tid
+            }),
+            success: (t)=>{
+                $(e.currentTarget).remove()
+                updateUser(user)
+            }
+        })
+    }
+</script>

@@ -1,0 +1,78 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h3>{{ user.first_name|string }}</h3>
+        <hr>
+        <div class="row">
+            <div class="col-md">
+                <h5>Информация:</h5>
+                <label for="user-phone">Телефон</label>
+                <input id="user-phone" type="text" name="phone" value="{{ user.phone }}">
+                <a class="btn btn-outline-success" onclick="saveUserPhone({{ user.id }});">Сохранить</a>
+            </div>
+            <div class="col-md">
+                <h5>Рассылки</h5>
+                <table class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Сообщение</th>
+                    <th>Тип</th>
+                    <th>Доставлено</th>
+                    <th>Дата</th>
+                    <th>Удалено</th>
+                    <th>Дата</th>
+                    <th>Комменарий</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for m in messages %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        {% set sm = m.get_schedule_message() %}
+                        <td>{{ sm.text }}</td>
+                        <td>{{ sm.message_type }}</td>
+                        <td>{{ m.sent }}</td>
+                        <td>{% if m.fact_sending_time %}{{ m.fact_sending_time.strftime('%d.%m.%y %H:%M:%S') }} {% endif %}</td>
+                        <td>{{ m.deleted }}</td>
+                        <td>{% if m.deleted_time %}{{ m.deleted_time.strftime('%d.%m.%y %H:%M:%S') }}{% endif %}</td>
+                        <td>{% if m.comment %}{{ m.comment }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form class="" action="" method="post">
+                    <h5 class="mb-3 font-weight-normal">Отправить сообщение в телеграм</h5>
+                    {{ send_tg_mes_form.hidden_tag() }}
+                    {{ send_tg_mes_form.text(size=32, class='col-sm-12 form-control', placeholder='Текст') }}<br>
+                    {% for error in send_tg_mes_form.text.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                    {{ send_tg_mes_form.submit(class="btn btn-lg btn-primary") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function saveUserPhone(uid) {
+            let xhr_phone = new XMLHttpRequest()
+            xhr_phone.open('post', `/admin/save_user_phone`)
+            data = {
+                uid: uid,
+                phone: document.getElementById('user-phone').value
+            }
+            xhr_phone.send(JSON.stringify(data))
+            xhr_phone.onload = ()=>{
+                if (xhr_phone.status === 200) {
+                    $('#user-phone').fadeOut()
+                    $('#user-phone').fadeIn()
+                }
+            }
+        }
+    </script>
+{% endblock %}

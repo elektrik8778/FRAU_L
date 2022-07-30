@@ -1,0 +1,83 @@
+{#<a>Меню</a>#}
+{%for fc in fcs %}
+    <div class="columns" onclick="getFoodList({{ fc.id }})">
+        <div class="column col-4 flex-centered">
+            <img
+                    loading="lazy"
+                    src="{{ url_for('static', filename='images/add_photo-512.png') if not fc.cat_picture else url_for('static', filename='uploads/'+fc.cat_picture) }}"
+                    class="img-responsive"
+                    style="border-radius: 10px; width: 90%;"
+            >
+        </div>
+        <div class="column col-6 flex-centered">
+            <div class="text-left" style="width: 100%">
+                {{ fc.cat_name }}
+            </div>
+        </div>
+        <div class="column col-1 flex-centered">
+            <i class="icon icon-arrow-right mr-1"></i>
+        </div>
+    </div>
+{#    <div class="accordion">#}
+{#        <input type="checkbox" id="accordion-{{ loop.index }}" name="accordion-checkbox" hidden>#}
+{#        <label class="accordion-header" for="accordion-{{ loop.index }}" style="position: relative;" onclick="getFoodList({{ fc.id }})">#}
+{#            <i class="icon icon-arrow-right mr-1" style="position: absolute; right: 0; top: 45%;"></i>#}
+{#            <div class="columns">#}
+{#                <div class="column col-4 flex-centered">#}
+{#                    <img#}
+{#                            loading="lazy"#}
+{#                            src="{{ url_for('static', filename='images/add_photo-512.png') if not fc.cat_picture else url_for('static', filename='uploads/'+fc.cat_picture) }}"#}
+{#                            class="img-responsive"#}
+{#                            style="border-radius: 10px; width: 90%;"#}
+{#                    >#}
+{#                </div>#}
+{#                <div class="col-7 flex-centered">#}
+{#                    <div class="text-left" style="width: 100%">#}
+{#                        {{ fc.cat_name }}#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </label>#}
+{#        <div class="accordion-body" style="overflow: scroll">#}
+{#            <!-- Accordions content -->#}
+{#            {% for i in fc.get_foods() %}#}
+{#                <div class="container" style="padding: 0 10% 0 10%; margin-top: 2%">#}
+{#                    <div class="columns">#}
+{#                        <div class="column col-12">#}
+{#                            <div class="columns">#}
+{#                                <div class="column col-8">#}
+{#                                    <h5>{{i.food_name}}</h5>#}
+{#                                </div>#}
+{#                                <div class="column col-4">#}
+{#                                    <span class="label label-rounded label-primary">{{ i.price }}₽</span>#}
+{#                                </div>#}
+{#                            </div>#}
+{##}
+{#                            <p class="text-small">{{i.description}}</p>#}
+{#                            {% for photo in i.photos %}#}
+{#                            <img#}
+{#                                    loading="lazy"#}
+{#                                    src="{{url_for('static', filename='uploads/'+photo.filename)}}"#}
+{#                                    class="img-responsive">#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                        <div class="container mt-1 mb-1">#}
+{#                            <div class="columns">#}
+{#                                <div class="column col-6 col-ml-auto">#}
+{#                                    <span class="">{{ i.weight }} г</span>#}
+{#                                </div>#}
+{#                                <div class="column col-6 col-mr-auto text-right">#}
+{#                                    <button class="btn btn-primary order_itm_button" id="itm_{{i.id}}" onclick="add_to_cart({{i.id}}, this)">В корзину</button>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                {% if loop.index < loop.length %}#}
+{#                    <hr>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#        </div>#}
+{#    </div>#}
+    <hr>
+{%endfor%}
