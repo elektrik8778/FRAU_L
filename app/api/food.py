@@ -22,22 +22,22 @@ from flask import make_response
 
 @bp.route("/api/food/csv", methods=["GET","POST"])
 def csv_exp():
-    employee_info = ['id', 'category', 'food_name', 'description', 'price', 'available']
+    # employee_info = ['id', 'category', 'food_name', 'description', 'price', 'available']
     foods = Food.query.order_by('id').all()
-    csvList = [(x.to_dict()) for x in foods]
-    # csvList = str(re.sub('\[|\]', '', str(csvList)))
+    csvList = [(x.to_dict()) for x in foods[:5]]
+    csvList = str(re.sub('\[|\]', '', str(csvList)))
     print(csvList)
-    with open('test4.csv', 'w') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=employee_info)
-        writer.writeheader()
-        writer.writerows(csvList)
-    # si = StringIO()
-    # cw = csv.DictWriter(si)
-    # cw.writerows(csvList)
-    # output = make_response(si.getvalue())
-    # output.headers["Content-Disposition"] = "attachment; filename=export.csv"
-    # output.headers["Content-type"] = "text/csv"
-    return csvfile
+    # with open('test4.csv', 'w') as csvfile:
+    #     writer = csv.DictWriter(csvfile, fieldnames=employee_info)
+    #     writer.writeheader()
+    #     writer.writerows(csvList)
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerows(csvList)
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
     # return redirect(url_for("admin.foods"))
 
 

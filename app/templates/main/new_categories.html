@@ -149,7 +149,7 @@
             endTime.setMinutes(0)
             endTime.setSeconds(0)
 
-            if (!(usersTime >= startTime && usersTime <= endTime))
+            if (usersTime >= startTime && usersTime <= endTime)
                 document.querySelector('#delivery-time-picker').value = `${('0'+startTime.getHours()).slice(-2)}:${('0'+startTime.getMinutes()).slice(-2)}`
 
             document.querySelector('#delivery-time-validity').textContent = ''
