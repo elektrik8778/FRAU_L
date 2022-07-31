@@ -573,10 +573,10 @@ class Food(db.Model):
             'description': self.description,
             'price': self.price,
             'available': self.available,
-            'photos': [{
-                'file_type': f.file_type,
-                'filename': f.filename
-            } for f in self.photos]
+            # 'photos': [{
+            #     'file_type': f.file_type,
+            #     'filename': f.filename
+            # } for f in self.photos]
         }
         return result
 

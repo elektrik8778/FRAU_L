@@ -22,17 +22,12 @@ from flask import make_response
 
 @bp.route("/api/food/csv", methods=["GET","POST"])
 def csv_exp():
-    # employee_info = ['id', 'category', 'food_name', 'description', 'price', 'available']
+    employee_info = ['id', 'category', 'food_name', 'description', 'price', 'available']
     foods = Food.query.order_by('id').all()
-    csvList = [(x.to_dict()) for x in foods[:5]]
-    csvList = str(re.sub('\[|\]', '', str(csvList)))
-    print(csvList)
-    # with open('test4.csv', 'w') as csvfile:
-    #     writer = csv.DictWriter(csvfile, fieldnames=employee_info)
-    #     writer.writeheader()
-    #     writer.writerows(csvList)
+    csvList = [x.to_dict() for x in foods]
     si = StringIO()
-    cw = csv.writer(si)
+    cw = csv.DictWriter(si, fieldnames=employee_info, quoting=csv.QUOTE_NONNUMERIC)
+    cw.writeheader()
     cw.writerows(csvList)
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
