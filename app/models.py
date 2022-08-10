@@ -505,7 +505,7 @@ class FoodOrder(db.Model):
                 print(e)
             try:
                 additional_information = f'''
-_В течении 15 минут с Вами свяжется оператор. Если оператор не позвонит, свяжитесь, пожалуйста, с ним по номеру 56-56-88 и скажите номер заказа #{self.id}_
+_В течении 15 минут с Вами свяжется оператор. Если оператор не позвонит, свяжитесь, пожалуйста, с ним по номеру {os.environ.get("OPERATOR_PHONE")} и скажите номер заказа #{self.id}_
                     '''
                 bot.edit_message_text(chat_id=User.query.get(self.owner).tg_id,
                                       message_id=self.msg_id,
