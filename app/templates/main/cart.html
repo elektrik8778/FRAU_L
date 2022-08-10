@@ -75,14 +75,15 @@
 </script>
 <main style="background-color: lightgrey; padding-bottom: 5%">
     <a href="{{ url_for('main.category_list') }}" class="mt-2 mb-2"><i class="icon icon-arrow-left mr-1"></i>Меню</a>
-    <h2>Корзина</h2>
+    <h2>Услуги</h2>
     <div style="border-radius: 10px; background-color: white; margin: 3%; padding: 5%">
         {% for i in g.cart %}
         <div class="columns card_itm_{{i.food}}">
             <div class="column col-4">
-                <img loading="lazy"
-                    src="{{url_for('static', filename='uploads/'+g.photo.query.filter_by(belongs_to=i.food).order_by('main', 'id').first().filename)}}"
-                    class="img-responsive flex-centered" style="border-radius: 50%; width: 80px; height: 80px; ">
+                <img
+                        loading="lazy"
+                        src="{{url_for('static', filename='uploads/'+g.photo.query.filter_by(belongs_to=i.food).order_by('main', 'id').first().filename)}}"
+                        class="img-fluid flex-centered" style="border-radius: 50%; max-width: 100%; height: 80px;">
             </div>
             <div class="column col-6">
                 {% set f=g.food.query.filter_by(id=i.food).first() %}

@@ -31,7 +31,7 @@ def get_cart(uid):
 
 @bp.get('/api/get_category_foods/<cid>')
 def get_category_foods(cid):
-    foods: Food = Food.query.filter(Food.category == cid).all()
+    foods: Food = Food.query.filter(Food.category == cid).order_by(Food.id).all()
     category: FoodCategory = FoodCategory.query.get(int(cid))
     return render_template('main/__category_foods.html', foods=foods, category=category)
 

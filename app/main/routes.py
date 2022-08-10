@@ -31,7 +31,6 @@ def category_list():
     orders_end_time = os.environ.get('ORDERS_END_TIME')
     yandex_api_key = os.environ.get('YA_MAPS_API_KEY')
     bot_payments = os.environ.get('BOT_PAYMETS')
-    from pprint import pprint
     return render_template('main/new_categories.html',
                            title=title,
                            bot_name=bot_name,

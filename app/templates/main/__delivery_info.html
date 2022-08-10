@@ -1,6 +1,6 @@
 <div style="margin: 3%">
-    <div id="delivery-type" class="columns">
-        {#<div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип доставки</span></div>#}
+    <div id="delivery-type" class="columns" style="display: none">
+        <div class="column col-5"><i class="icon icon-check mr-2"></i><span>Тип доставки</span></div>
         <!-- mutually exclusive Accordions example (with same input names) -->
         <div class="column col-7 text-right">
             <input type="radio" name="delivery_type" id="dt-1" value="delivery" hidden>
@@ -38,8 +38,8 @@
 {#            <input type="radio" id="addr-{{a.id}}" value="{{a.id}}" name='delivery_addr' hidden>#}
 {#            {% endfor %}#}
             <div class="accordion">
-                {#<input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox" hidden>#}
-                <input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox">
+                <input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox" hidden>
+{#                <input type="checkbox" id="accordion-delivery-address" name="accordion-checkbox">#}
                 <label id="accordion-delivery-address-label" class="accordion-header c-hand"
                     for="accordion-delivery-address">
                     <span id="addr-txt">выбрать</span><i class="icon icon-arrow-right"></i>
@@ -106,7 +106,7 @@
                         <input id="save-addr" type="submit" class="btn btn-primary form-input input-group-btn" value="Сохранить">
                     </div>
                 </div>
-                <hr>
+{#                <hr>#}
             </form>
 {#            <hr>#}
         </div>
@@ -141,21 +141,21 @@
                 </div>
             </div>
         </div>
-        <div class="column col-12">
-            <hr>
-        </div>
+{#        <div class="column col-12">#}
+{#            <hr>#}
+{#        </div>#}
     </div>
     <div id="delivery-time" class="columns">
-        <div class="column col-6"><i class="icon icon-time mr-2"></i><span class="delivery-time">Время уборки</span></div>
+        <div class="column col-6"><i class="icon icon-time mr-2"></i><span class="delivery-time">Дата, время уборки</span></div>
         <div class="column col-6 text-right">
             {# <span>выбрать</span><i class="icon icon-arrow-right"></i> #}
-            <input id="delivery-time-picker" type="time" name="prepare_at" min="11:00" max="22:00" style="width: 50%">
+            <input id="delivery-time-picker" type="datetime-local" name="prepare_at" style="width: 100px">
         </div>
-        <div class="column col-12">
+        <div class="column col-12" style="display: none;">
             <span id="delivery-time-validity"></span>
             <style>
                 #delivery-time-validity {
-                    --del-text: 'Выберите время между 11:00 и 22:00 или активируйте ползунок "Как можно скорее" ниже';
+                    --del-text: 'Выберите дату и время или активируйте ползунок "Как можно скорее" ниже';
                 }
                 input:invalid {
                     color: red;
@@ -192,8 +192,8 @@
         <div class="column col-7 text-right">
             <select id="pay_method" name="pay_method" class="form-select">
                 <option id="pm_c" value="online payment" {% if not bot_payments %} disabled {% endif %}>Картой онлайн</option>
-                <option selected value="card in place">Картой при получении</option>
-                <option id="pm_c" value="cash">Наличными при получении</option>
+                <option selected value="card in place">Картой</option>
+                <option id="pm_c" value="cash">Наличными</option>
 {#                <option id="pm_c_c" value="courier_cash" disabled>Наличными курьеру</option>#}
             </select>
         </div>

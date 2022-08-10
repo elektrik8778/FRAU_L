@@ -1,31 +1,54 @@
 <div>
     {% for i in g.cart %}
     <div class="columns card_itm_{{i.food}}">
-        <div class="column col-4">
-            <img loading="lazy"
-                src="{{url_for('static', filename='uploads/'+g.photo.query.filter_by(belongs_to=i.food).order_by('main', 'id').first().filename)}}"
-                class="img-responsive flex-centered" style="border-radius: 10px; width: 80px; height: 80px; object-fit: cover ">
-        </div>
-        <div class="column col-6">
+{#        <div class="column col-4">#}
+{#            <img loading="lazy"#}
+{#                src="{{url_for('static', filename='uploads/'+g.photo.query.filter_by(belongs_to=i.food).order_by('main', 'id').first().filename)}}"#}
+{#                class="img-responsive flex-centered" style="border-radius: 10px; width: 80px; height: 80px; object-fit: cover ">#}
+{#        </div>#}
+        <div class="column col-12">
             {% set f=g.food.query.filter_by(id=i.food).first() %}
-            <p>{{ f.food_name }}</p>
+            <div>
+            <div class="columns">
+                <div class="column col-1">
+                    <span>{{ loop.index }})</span>
+                </div>
+                <div class="column col-6">
+                    <div class="columns">
+                        <span class="column col-12 label label-rounded label-primary" style="background-color: white; border: 1px solid #90d74d; color: #90d74d;">{{ f.get_category_name() }}</span>
+                        <span class="column col-12">{{ f.food_name }}</span>
+                    </div>
+                </div>
+                <div class="column col-3 text-center">
+                    <span class="pre_total" id='pos_{{ i.food }}'>{{ i.amount*f.price }}₽</span>
+                </div>
+                <div class="column col-1">
+                    <button style="border-radius: 30px; border: 1px solid #90d74d; color: #90d74d;" class="btn btn-action s-circle d-inline"
+                    onclick="update_cart({{ i.food }}, 'dec', this)"><i class="icon icon-minus"></i></button>
+                </div>
+                <div class="col-12">
+                    <hr>
+                </div>
+            </div>
+            </div>
         </div>
     </div>
     <div class="columns card_itm_{{i.food}}">
         <div class="column col-2"></div>
         <div class="column col-10 text-right">
-            <b>{{ f.price }}₽ х <span id="itm_{{ i.food }}_count">{{ i.amount }}</span></b>
-            <input class="invoice_info" type="text" hidden id="food_p_{{ i.food }}" data-amount="{{ i.amount }}"
-                value="{{ f.price }}">
-            <button style="border-radius: 10px 0 0 10px; color: black;" class="btn btn-action s-circle d-inline"
-                onclick="update_cart({{ i.food }}, 'dec', this)"><i class="icon icon-minus"></i></button>
-            <button style="border-radius: 0 10px 10px 0; color: black;" class="btn btn-action s-circle d-inline"
-                onclick="update_cart({{ i.food }}, 'inc', this)"><i class="icon icon-plus"></i></button>
-            <span class="pre_total" id='pos_{{ i.food }}'>{{ i.amount*f.price }}₽</span>
+            <div style="display: none">
+                <b>{{ f.price }}₽ х <span id="itm_{{ i.food }}_count">{{ i.amount }}</span></b>
+                <input class="invoice_info" type="text" hidden id="food_p_{{ i.food }}" data-amount="{{ i.amount }}"
+                    value="{{ f.price }}">
+                <button style="border-radius: 10px 0 0 10px; color: black;" class="btn btn-action s-circle d-inline"
+                    onclick="update_cart({{ i.food }}, 'dec', this)"><i class="icon icon-minus"></i></button>
+                <button style="border-radius: 0 10px 10px 0; color: black;" class="btn btn-action s-circle d-inline"
+                    onclick="update_cart({{ i.food }}, 'inc', this)"><i class="icon icon-plus"></i></button>
+            </div>
         </div>
     </div>
-    {% if not loop.last %}
-        <hr class="card_itm_{{i.food}}">
-    {% endif %}
+{#    {% if not loop.last %}#}
+{#        <hr class="card_itm_{{i.food}}">#}
+{#    {% endif %}#}
     {% endfor %}
 </div>

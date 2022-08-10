@@ -216,7 +216,7 @@
         }
 
         function pay() {
-            
+
             //l = document.getElementById('upd_btn')
             bot.MainButton.disable()
             if (document.querySelectorAll('.pre_total').length < 1) return
@@ -229,7 +229,7 @@
             {#если самовывоз#}
                 {#проверить что установлен ресторан#}
                 {#проверить время#}
-            
+
             let delivery_address = document.getElementById('addr-txt').dataset['addrId']
             let foods = document.querySelectorAll('.invoice_info')
             let invoice = {
@@ -261,7 +261,7 @@
                     restraunt_id = ri[i].value
                 }
             }
-            
+
             invoice['delivery_addr'] = delivery_address
             // invoice['delivery_type'] = delivery_type
             // invoice['restraunt_id'] = restraunt_id
@@ -384,7 +384,7 @@
             bot.MainButton.offClick(pay)
             bot.MainButton.onClick(showCart)
             sh(localStorage.uid)
-            menuItems = document.querySelectorAll('.menu-item')
+            let menuItems = document.querySelectorAll('.menu-item')
             for (m of menuItems) {
                 m.removeEventListener('click', chooseAccordeonItem)
                 m.addEventListener('click', chooseAccordeonItem)
@@ -418,79 +418,79 @@
         function updateCartMainButton() {
             // console.log(document.getElementById('pay_method').value)
             // console.log(payMethod.textContent)
-            let now = new Date()
-            let startTime = new Date()
-            startTime.setHours({{ orders_start_time.split(':')[0] | int }})
-            startTime.setMinutes({{ orders_start_time.split(':')[1] | int }})
-            startTime.setSeconds({{ orders_start_time.split(':')[2] | int }})
-            let endTime = new Date()
-            endTime.setHours({{ orders_end_time.split(':')[0] | int }})
-            endTime.setMinutes({{ orders_end_time.split(':')[1] | int }})
-            endTime.setSeconds({{ orders_end_time.split(':')[2] | int }})
+            {#let now = new Date()#}
+            {#let startTime = new Date()#}
+            {#startTime.setHours({{ orders_start_time.split(':')[0] | int }})#}
+            {#startTime.setMinutes({{ orders_start_time.split(':')[1] | int }})#}
+            {#startTime.setSeconds({{ orders_start_time.split(':')[2] | int }})#}
+            {#let endTime = new Date()#}
+            {#endTime.setHours({{ orders_end_time.split(':')[0] | int }})#}
+            {#endTime.setMinutes({{ orders_end_time.split(':')[1] | int }})#}
+            {#endTime.setSeconds({{ orders_end_time.split(':')[2] | int }})#}
 
-            if (!(startTime <= now && now <= endTime)) {
-                let orderVerb = 'Оплатить'
-                // if (['Доставка'].includes(deliveryTypeLabel.textContent)) orderVerb = 'Оплатить'
-                // if (['Наличными при получении','Картой при получении'].includes(payMethod.textContent)) orderVerb = 'Заказать на'
-                if ((document.getElementById('pay_method').value === 'card in place') | (document.getElementById('pay_method').value === 'cash') ) orderVerb = 'Заказать на'
-                // if (!(['Доставка', 'С собой', 'На месте'].includes(deliveryTypeLabel.textContent))) {
-                //     bot.MainButton.offClick(pay)
-                //     bot.MainButton.hide()
-                //     return
-                // }
+            {#if (!(startTime <= now && now <= endTime)) {#}
+            let orderVerb = 'Оформить заявку на'
+            {#if (['Доставка'].includes(deliveryTypeLabel.textContent)) orderVerb = 'Оплатить'#}
+            {#if (['Наличными при получении','Картой при получении'].includes(payMethod.textContent)) orderVerb = 'Заказать на'#}
+            {#if ((document.getElementById('pay_method').value === 'card in place') | (document.getElementById('pay_method').value === 'cash') ) orderVerb = 'Заказать на'#}
+            {#if (!(['Доставка', 'С собой', 'На месте'].includes(deliveryTypeLabel.textContent))) {#}
+            {#     bot.MainButton.offClick(pay)#}
+            {#     bot.MainButton.hide()#}
+            {#     return#}
+            {#}#}
 
-                // if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (document.querySelector('#addr-txt').textContent === 'выбрать'))  {
-                //     bot.MainButton.offClick(pay)
-                //     bot.MainButton.hide()
-                //     return
-                // }
+            {#if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (document.querySelector('#addr-txt').textContent === 'выбрать'))  {#}
+            {#     bot.MainButton.offClick(pay)#}
+            {#     bot.MainButton.hide()#}
+            {#     return#}
+            {#}#}
 
-                if (document.querySelector('#addr-txt').textContent === 'выбрать') {
-                    bot.MainButton.offClick(pay)
-                    bot.MainButton.hide()
-                    return
-                }
-
-                if (document.querySelector('#delivery-time-picker').value === '') {
-                    bot.MainButton.offClick(pay)
-                    bot.MainButton.hide()
-                    return
-                }
-
-                // if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (!document.querySelector('#delivery-price-value'))) {
-                //     bot.MainButton.offClick(pay)
-                //     bot.MainButton.hide()
-                //     return
-                // }
-
-                let totals = document.querySelectorAll('.pre_total')
-
-                if (totals.length < 1)  {
-                    bot.MainButton.offClick(pay)
-                    bot.MainButton.hide()
-                } else {
-                    {# todo поверить, что выбран тип, адрес или ресторан #}
-
-                    let deliveryPrice = 0
-                    if (document.querySelector('#delivery-price-value'))
-                        deliveryPrice = parseFloat(document.querySelector('#delivery-price-value').textContent)
-                    if (!['Доставка'].includes(deliveryTypeLabel.textContent))
-                        deliveryPrice = 0
-
-                    bot.MainButton.setParams({
-                        'text': `${orderVerb} ${get_total()+deliveryPrice}₽`,
-                        'color': '#218555'})
-                    bot.MainButton.onClick(pay)
-                    bot.MainButton.enable()
-                    bot.MainButton.show()
-                }
-            } else {
+            if (document.querySelector('#addr-txt').textContent === 'выбрать') {
                 bot.MainButton.offClick(pay)
-                bot.MainButton.setParams({
-                    'text': `Заказы доступны с ${('0'+startTime.getHours()).slice(-2)}:${('0'+startTime.getMinutes()).slice(-2)} до ${('0'+endTime.getHours()).slice(-2)}:${('0'+endTime.getMinutes()).slice(-2)}`,
-                    'color': '#afafaf'})
-                bot.MainButton.disable()
+                bot.MainButton.hide()
+                return
             }
+
+            if (document.querySelector('#delivery-time-picker').value === '') {
+                bot.MainButton.offClick(pay)
+                bot.MainButton.hide()
+                return
+            }
+
+            {#if ((['Доставка'].includes(deliveryTypeLabel.textContent)) && (!document.querySelector('#delivery-price-value'))) {#}
+            {#     bot.MainButton.offClick(pay)#}
+            {#     bot.MainButton.hide()#}
+            {#     return#}
+            {#}#}
+
+            let totals = document.querySelectorAll('.pre_total')
+
+            if (totals.length < 1)  {
+                bot.MainButton.offClick(pay)
+                bot.MainButton.hide()
+            } else {
+                {# todo поверить, что выбран тип, адрес или ресторан #}
+
+                let deliveryPrice = 0
+                if (document.querySelector('#delivery-price-value'))
+                    deliveryPrice = parseFloat(document.querySelector('#delivery-price-value').textContent)
+                if (!['Доставка'].includes(deliveryTypeLabel.textContent))
+                    deliveryPrice = 0
+
+                bot.MainButton.setParams({
+                    'text': `${orderVerb} ${get_total()+deliveryPrice}₽`,
+                    'color': '#218555'})
+                bot.MainButton.onClick(pay)
+                bot.MainButton.enable()
+                bot.MainButton.show()
+            }
+            //{#} else {#}
+            {#    bot.MainButton.offClick(pay)#}
+            {#    bot.MainButton.setParams({#}
+            {#        'text': `Заказы доступны с ${('0'+startTime.getHours()).slice(-2)}:${('0'+startTime.getMinutes()).slice(-2)} до ${('0'+endTime.getHours()).slice(-2)}:${('0'+endTime.getMinutes()).slice(-2)}`,#}
+            {#        'color': '#afafaf'})#}
+            {#    bot.MainButton.disable()#}
+            {#}#}
         }
 
         function get_total() {

@@ -16,7 +16,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import os
 import random
-import cv2
+# import cv2
 import uuid
 from io import BufferedReader
 
@@ -564,6 +564,9 @@ class Food(db.Model):
     price = db.Column(db.Float(), default=0, nullable=False)
     available = db.Column(db.Boolean(), default=False)
     photos = db.relationship('FoodPhoto', cascade='all, delete')
+
+    def get_category_name(self):
+        return FoodCategory.query.get(self.category).cat_name
 
     def to_dict(self):
         result = {

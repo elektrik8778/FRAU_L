@@ -1,4 +1,4 @@
-<h2 class="text-center">{{ category.cat_name }}</h2>
+<h2 class="text-center" style="margin-top: 12%">{{ category.cat_name }}</h2>
 {% for i in foods %}
     <div class="container" style="padding: 0 10% 0 10%; margin-top: 2%">
         <div class="columns">
@@ -8,27 +8,27 @@
                         <h5>{{i.food_name}}</h5>
                     </div>
                     <div class="column col-4">
-                        <span class="label label-rounded label-primary">{{ i.price }}₽</span>
+                        <span class="label label-rounded label-primary" style="background-color: white; border: 1px solid #90d74d; color: #90d74d;">{{ i.price }}₽</span>
                     </div>
                 </div>
 
                 <p class="text-small">{{i.description}}</p>
-                <div class="text-center">
-                    {% for photo in i.photos %}
-                    <img
-                            loading="lazy"
-                            src="{{url_for('static', filename='uploads/'+photo.filename)}}"
-                            class="img-responsive"
-                            style="margin-left: auto; margin-right: auto; border-radius: 10px;"
-                    >
-                    {% endfor %}
-                </div>
+{#                <div class="text-center">#}
+{#                    {% for photo in i.photos %}#}
+{#                    <img#}
+{#                            loading="lazy"#}
+{#                            src="{{url_for('static', filename='uploads/'+photo.filename)}}"#}
+{#                            class="img-responsive"#}
+{#                            style="margin-left: auto; margin-right: auto; border-radius: 10px;"#}
+{#                    >#}
+{#                    {% endfor %}#}
+{#                </div>#}
             </div>
             <div class="container mt-1 mb-1">
                 <div class="columns">
 
-                    <div class="column col-6 col-mr-auto text-right">
-                        <button class="btn btn-primary order_itm_button" id="itm_{{i.id}}" data-action="add" onclick="add_to_cart({{i.id}}, this)">В корзину</button>
+                    <div class="column col-12 col-mr-auto text-right">
+                        <button class="btn btn-primary order_itm_button" style="background-color: #90d74d; border: none; border-radius: 30px; padding-left: 10px; padding-right: 10px" id="itm_{{i.id}}" data-action="add" onclick="add_to_cart({{i.id}}, this)">В корзину</button>
                     </div>
                 </div>
             </div>
