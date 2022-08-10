@@ -347,7 +347,7 @@ class FoodOrder(db.Model):
         return Promocode.query.get(self.used_promo)
 
     def get_food_order_content(self):
-        return '\n'.join([f'*{i+1}. {Food.query.get(f["food"]).food_name if Food.query.get(f["food"]) else f["food_name"]+" (удалён)" if "food_name" in f else "(удалён)"}* {f["amount"]} шт.' for i,f in enumerate(json.loads(self.order_json))])
+        return '\n'.join([f'*{i+1}.* {Food.query.get(f["food"]).get_category_name()+", "+Food.query.get(f["food"]).food_name if Food.query.get(f["food"]) else f["food_name"]+" (удалён)" if "food_name" in f else "(удалён)"}' for i,f in enumerate(json.loads(self.order_json))])
 
     def get_delivery_address(self):
         try:
@@ -386,13 +386,13 @@ class FoodOrder(db.Model):
         delta = timedelta(hours=int(self.get_user().get_group().time_zone) - int(os.environ.get('SERVER_TIME_ZONE')))
         text = f'''
 *Заказ №{self.id}* от {(self.created_at + delta).strftime("%d.%m.%y %H:%M")}
-*Время:* {self.order_time if not self.fastest_delivery else 'как можно скорее'}
+*Время уборки:* {datetime.fromisoformat(self.order_time).strftime("%d.%m.%y %H:%M") if not self.fastest_delivery else 'как можно скорее'}
 *Статус:* {FoodOrder.to_ru(self.status)} {(self.paid_at + delta).strftime("%d.%m.%y %H:%M") if self.paid else ''}
 *Метод оплаты:* {self.get_payment_type()}
 *Скидка по промокоду:* {f'{self.get_promo().name} {self.get_promo().discount*100}%' if self.used_promo else 'нет'}
 *Оплата бонусами:* {f'{self.used_bonuses} бонусов' if self.uses_bonus else 'нет'}
 *Сумма:* {self.cost}
-*Сумма с доставкой, скидкой и бонусами:* {self.get_total_price()}
+*Сумма со скидкой и бонусами:* {self.get_total_price()}
 *Клиент:* {tg_user_mention(self.get_user())}
 *Адрес:* {self.get_delivery_address() if self.order_type == 'delivery' else '-'}
 *Телефон:* {self.get_user().phone}
@@ -412,7 +412,7 @@ class FoodOrder(db.Model):
             food_list += f'<li>{s.replace("*", "")}</li>'
         html = f'''
 <h1>Заказ №{self.id} от {(self.created_at + delta).strftime("%d.%m.%y %H:%M")}</h1>
-<p><b>Время:</b> {self.order_time if not self.fastest_delivery else 'как можно скорее'}</p> 
+<p><b>Время уборки:</b> {datetime.fromisoformat(self.order_time).strftime("%d.%m.%y %H:%M") if not self.fastest_delivery else 'как можно скорее'}</p> 
 <p><b>Статус:</b> {FoodOrder.to_ru(self.status)} {(self.paid_at + delta).strftime("%d.%m.%y %H:%M") if self.paid else ''}</p> 
 <p><b>Метод оплаты:</b> {self.get_payment_type()}</p>
 <p><b>Скидка по промокоду:</b> {f'{self.get_promo().name} {self.get_promo().discount*100}%' if self.used_promo else 'нет'}</p>
@@ -443,12 +443,10 @@ class FoodOrder(db.Model):
             return
 
     def get_order_clients_reply_markup(self):
-        btn_delivery_terms = InlineKeyboardButton('Условия доставки', url='https://telegra.ph/Usloviya-dostavki-05-31')
-        btn_confident_policy = InlineKeyboardButton('Политика конфиценциальности', url='https://telegra.ph/Politika-konficencialnosti-05-31')
-        btn_bonuses_terms = InlineKeyboardButton('Правила начисления бонусов', url='https://telegra.ph/Pravila-nachisleniya-bonusov-05-31')
+        btn_webpage = InlineKeyboardButton('Наш сайт', url='https://frauchisto.ru')
+        btn_flamp = InlineKeyboardButton('Мы на Flamp', url='https://blagoveshensk.flamp.ru/firm/frau_chisto_kliningovaya_kompaniya-70000001020618545')
         btn_cancel_order = InlineKeyboardButton('Отменить заказ', callback_data=f'cancelorder_{self.id}')
-        reply_markup = InlineKeyboardMarkup(
-            inline_keyboard=[[btn_delivery_terms], [btn_bonuses_terms], [btn_confident_policy]])
+        reply_markup = InlineKeyboardMarkup(inline_keyboard=[[btn_webpage], [btn_flamp]])
         if not self.paid:
             reply_markup.inline_keyboard.append([btn_cancel_order])
         return reply_markup
